@@ -45,3 +45,4 @@ I've created private repository at Docker Hub, tagged and pushed image like that
 docker tag aws-bootcamp-cruddur-2023-backend-flask dockerustotalus/aws-bootcamp:backend-v0
 docker push dockerustotalus/aws-bootcamp:backend-v0
 ```
+![Screenshot of DockerHub with uploaded image](assets/week1/docker-hub-screenshot.png)
