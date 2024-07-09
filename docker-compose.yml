@@ -5,6 +5,11 @@ services:
       FRONTEND_URL: "http://127.0.0.1:3000"
       BACKEND_URL: "http://127.0.0.1:4567"
     build: ./backend-flask
+    healthcheck:
+      test: curl -f http://127.0.0.1:4567/api/activities/home
+      interval: 30s
+      timeout: 5s
+      retries: 2
     ports:
       - "4567:4567"
     volumes:
@@ -13,6 +18,11 @@ services:
     environment:
       REACT_APP_BACKEND_URL: "http://127.0.0.1:4567"
     build: ./frontend-react-js
+    healthcheck:
+      test: curl -f http://127.0.0.1:3000
+      interval: 30s
+      timeout: 5s
+      retries: 2
     command: /frontend-react-js/entrypoint.sh
     ports:
       - "3000:3000"
