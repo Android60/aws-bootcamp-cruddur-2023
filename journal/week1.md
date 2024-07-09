@@ -16,3 +16,25 @@ FROM python:3.10-slim-buster AS builder
 FROM builder AS dev
 # Stage 2
 ```
+
+### Implement a healthcheck in the V3 Docker compose file
+For the backend container I had to install curl inside image, so I've added apt install command in Dockerfile:
+```
+RUN apt update && apt install -y curl
+```
+After that I've added healthcheck property in docker-compose.yml
+```
+healthcheck:
+    test: curl -f http://127.0.0.1:4567/api/activities/home
+    interval: 30s
+    timeout: 5s
+    retries: 2
+```
+As for the frontend container, curl was already installed in the image, so I've simply added this healthcheck property:
+```
+healthcheck:
+    test: curl -f http://127.0.0.1:3000
+    interval: 30s
+    timeout: 5s
+    retries: 2
+````
