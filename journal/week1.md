@@ -46,3 +46,11 @@ docker tag aws-bootcamp-cruddur-2023-backend-flask dockerustotalus/aws-bootcamp:
 docker push dockerustotalus/aws-bootcamp:backend-v0
 ```
 ![Screenshot of DockerHub with uploaded image](assets/week1/docker-hub-screenshot.png)
+
+### Launch container in EC2
+I've started new EC2 instance, installed Docker the usual way via yum. After that I've run:
+```
+docker run -p 4567:4567 -d dockerustotalus/aws-bootcamp:backend-v0
+```
+
+![Screenshot of browser with backend URL open](assets/week1/backend-on-ec2.png)
