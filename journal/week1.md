@@ -42,8 +42,10 @@ healthcheck:
 ### Tag and push an image to DockerHub
 I've created private repository at Docker Hub, tagged and pushed image like that:
 ```
-docker tag aws-bootcamp-cruddur-2023-backend-flask dockerustotalus/aws-bootcamp:backend-v0
+docker tag frontend-react-js dockerustotalus/aws-bootcamp:backend-v0
 docker push dockerustotalus/aws-bootcamp:backend-v0
+docker tag backend-flask dockerustotalus/aws-bootcamp:frontend-v0
+docker push dockerustotalus/aws-bootcamp:frontend-v0
 ```
 ![Screenshot of DockerHub with uploaded image](assets/week1/docker-hub-screenshot.png)
 
@@ -54,3 +56,5 @@ docker run -p 4567:4567 -d dockerustotalus/aws-bootcamp:backend-v0
 ```
 
 ![Screenshot of browser with backend URL open](assets/week1/backend-on-ec2.png)
+
+After
