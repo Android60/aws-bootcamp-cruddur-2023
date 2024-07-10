@@ -39,7 +39,7 @@ healthcheck:
     retries: 2
 ````
 
-### Tag and push an image to DockerHub
+### Tag and push an image to Docker Hub
 I've created private repository at Docker Hub, tagged and pushed image like that:
 ```
 docker tag frontend-react-js dockerustotalus/aws-bootcamp:backend-v0
@@ -47,7 +47,7 @@ docker push dockerustotalus/aws-bootcamp:backend-v0
 docker tag backend-flask dockerustotalus/aws-bootcamp:frontend-v0
 docker push dockerustotalus/aws-bootcamp:frontend-v0
 ```
-![Screenshot of DockerHub with uploaded image](assets/week1/docker-hub-screenshot.png)
+![Screenshot of Docker Hub with uploaded image](assets/week1/docker-hub-screenshot.png)
 
 ### Launch container in EC2
 I've started new EC2 instance, installed Docker the usual way via yum. After that I've run:
@@ -57,4 +57,6 @@ docker run -p 4567:4567 -d dockerustotalus/aws-bootcamp:backend-v0
 
 ![Screenshot of browser with backend URL open](assets/week1/backend-on-ec2.png)
 
-After
+After that I've changed 'image' attribute of docker-compose file and specifiend images that were pushed to DockerHub earlier, like [that](assets/week1/docker-compose.yml).
+
+![Screenshot of browser with frontend URL open](assets/week1/frontend-on-ec2.png)
