@@ -40,13 +40,13 @@ from flask import got_request_exception
 
 
 # Configuring Logger to Use CloudWatch
-# LOGGER = logging.getLogger(__name__)
-# LOGGER.setLevel(logging.DEBUG)
-# console_handler = logging.StreamHandler()
-# cw_handler = watchtower.CloudWatchLogHandler(log_group='cruddur')
-# LOGGER.addHandler(console_handler)
-# LOGGER.addHandler(cw_handler)
-# LOGGER.info("Test log")
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.DEBUG)
+console_handler = logging.StreamHandler()
+cw_handler = watchtower.CloudWatchLogHandler(log_group='cruddur')
+LOGGER.addHandler(console_handler)
+LOGGER.addHandler(cw_handler)
+LOGGER.info("Test log")
 #--------Cloudwatch--------
 
 # Initialize tracing and an exporter that can send data to Honeycomb
