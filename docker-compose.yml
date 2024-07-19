@@ -29,6 +29,7 @@ services:
     environment:
       # REACT_APP_BACKEND_URL: "http://127.0.0.1:4567"
       REACT_APP_BACKEND_URL: "https://${CODESPACE_NAME}-4567.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+      HONEYCOMB_API_KEY: "$HONEYCOMB_API_KEY"
     build: ./frontend-react-js
     healthcheck:
       test: curl -f http://127.0.0.1:3000
@@ -38,8 +39,8 @@ services:
     command: /frontend-react-js/entrypoint.sh
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend-react-js/src/:/frontend-react-js/src/
+    # volumes:
+    #   - ./frontend-react-js/src/:/frontend-react-js/src/
   db:
     image: postgres:13-alpine
     restart: always
