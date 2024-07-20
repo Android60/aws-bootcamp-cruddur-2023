@@ -55,7 +55,7 @@ provider = TracerProvider()
 processor = BatchSpanProcessor(OTLPSpanExporter())
 simple_processor = SimpleSpanProcessor(ConsoleSpanExporter())
 provider.add_span_processor(processor)
-provider.add_span_processor(simple_processor)
+# provider.add_span_processor(simple_processor) # Debugging
 trace.set_tracer_provider(provider)
 tracer = trace.get_tracer(__name__)
 
