@@ -2,10 +2,10 @@ version: "3.8"
 services:
   backend-flask:
     environment:
-      # FRONTEND_URL: "http://127.0.0.1:3000"
-      # BACKEND_URL: "http://127.0.0.1:4567"
-      FRONTEND_URL: "https://${CODESPACE_NAME}-3000.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
-      BACKEND_URL: "https://${CODESPACE_NAME}-4567.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+      FRONTEND_URL: "http://127.0.0.1:3000"
+      BACKEND_URL: "http://127.0.0.1:4567"
+      # FRONTEND_URL: "https://${CODESPACE_NAME}-3000.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+      # BACKEND_URL: "https://${CODESPACE_NAME}-4567.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
       OTEL_SERVICE_NAME: "backend-flask"
       OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
       OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team=${HONEYCOMB_API_KEY}"
@@ -27,14 +27,14 @@ services:
       - ./backend-flask:/backend-flask
   frontend-react-js:
     environment:
-      # REACT_APP_BACKEND_URL: "http://127.0.0.1:4567"
-      REACT_APP_BACKEND_URL: "https://${CODESPACE_NAME}-4567.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+      REACT_APP_BACKEND_URL: "http://127.0.0.1:4567"
+      # REACT_APP_BACKEND_URL: "https://${CODESPACE_NAME}-4567.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
       REACT_APP_HONEYCOMB_API_KEY: "$HONEYCOMB_API_KEY"
       AWS_DEFAULT_REGION: "us-east-1"
       REACT_APP_AWS_PROJECT_REGION: "$AWS_DEFAULT_REGION"
       REACT_APP_AWS_COGNITO_REGION: "$AWS_DEFAULT_REGION"
-      REACT_APP_AWS_USER_POOLS_ID: "us-east-1_Nbali6e9c"
-      REACT_APP_CLIENT_ID: "5u48duv9grm6f9iekbeov6mslt"
+      REACT_APP_AWS_USER_POOLS_ID: "us-east-1_7OaMVeDno"
+      REACT_APP_CLIENT_ID: "7n7jv66d4t2ft4ujt4pgik16ii"
     build: ./frontend-react-js
     healthcheck:
       test: curl -f http://127.0.0.1:3000
@@ -44,8 +44,8 @@ services:
     command: /frontend-react-js/entrypoint.sh
     ports:
       - "3000:3000"
-    # volumes:
-    #   - ./frontend-react-js/src/:/frontend-react-js/src/
+    volumes:
+      - ./frontend-react-js/src/:/frontend-react-js/src/
   db:
     image: postgres:13-alpine
     restart: always
