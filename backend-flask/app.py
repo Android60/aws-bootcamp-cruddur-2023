@@ -94,7 +94,7 @@ cors = CORS(
   app, 
   resources={r"/api/*": {"origins": origins}},
   expose_headers="location,link",
-  allow_headers=['content-type','if-modified-since','traceparent','tracesttate'],
+  allow_headers=['content-type','if-modified-since','traceparent','tracesttate','Authorization'],
   methods="OPTIONS,GET,HEAD,POST"
 )
 
