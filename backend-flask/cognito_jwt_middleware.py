@@ -5,7 +5,7 @@ from lib.cognito_jwt_token import CognitoJwtToken, TokenVerifyError
 
 class middleware():
     """
-    JWT verification middleware
+    Cognito JWT verification middleware
     """
     def __init__(self, app):
         self.app = app
