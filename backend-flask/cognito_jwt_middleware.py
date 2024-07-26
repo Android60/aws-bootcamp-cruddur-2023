@@ -10,9 +10,9 @@ class middleware():
     def __init__(self, app):
         self.app = app
     def __call__(self, environ, start_response):
-        LOGGER = logging.getLogger(__name__)
+        LOGGER = logging.getLogger(__name__) # Initialize Logger
         LOGGER.setLevel(logging.DEBUG)
-        console_handler = logging.StreamHandler()
+        console_handler = logging.StreamHandler() # Log to console
         LOGGER.addHandler(console_handler)
         LOGGER.info("Middleware got the call")
         request = Request(environ)
@@ -31,6 +31,7 @@ class middleware():
             # LOGGER.info(claims)
             # LOGGER.info(claims['username'])
             environ["isAuthenticated"] = True
+            environ["username"] = claims['username']
         except TokenVerifyError as e:
             # Request is not authenticated
             LOGGER.info("Middleware: This request is not authenticated")
