@@ -2,6 +2,7 @@ from flask import Flask
 from flask import request
 from flask_cors import CORS, cross_origin
 import os
+from cognito_jwt_middleware import middleware # For JWT verification
 
 from services.home_activities import *
 from services.notifications_activities import *
@@ -72,6 +73,9 @@ cognito_jwt_token = CognitoJwtToken(
   user_pool_client_id=os.getenv("AWS_COGNITO_USER_POOL_CLIENT_ID"),
   region=os.getenv("AWS_DEFAULT_REGION")
 )
+
+# Configure middleware for JWT token verification
+app.wsgi_app = middleware(app.wsgi_app)
 
 # Initialize X-Ray
 XRayMiddleware(app, xray_recorder)
@@ -155,13 +159,18 @@ def data_create_message():
 
 @app.route("/api/activities/home", methods=['GET'])
 def data_home():
+  #---Decouple JWT verification with middleware---
   access_token = CognitoJwtToken.extract_access_token(request.headers)
+  app.logger.debug("Got from Middleware: User auth is")
+  app.logger.debug(request.environ["isAuthenticated"])
+  app.logger.debug(request.environ["username"]) # Log current userid
+  #---Decouple JWT verification with middleware---
   try:
     # Request is authenticated
     claims = cognito_jwt_token.verify(access_token)
     app.logger.debug("This request is authenticated")
-    app.logger.debug(claims)
-    app.logger.debug(claims['username'])
+    # app.logger.debug(claims)
+    # app.logger.debug(claims['username'])
     data = HomeActivities.run(cognito_user_id=claims['username'])
   except TokenVerifyError as e:
     # Request is not authenticated
