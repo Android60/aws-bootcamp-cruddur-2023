@@ -159,16 +159,16 @@ def data_create_message():
 
 @app.route("/api/activities/home", methods=['GET'])
 def data_home():
-  #---Decouple JWT verification with middleware---
   access_token = CognitoJwtToken.extract_access_token(request.headers)
-  app.logger.debug("Got from Middleware: User auth is")
-  app.logger.debug(request.environ["isAuthenticated"])
-  app.logger.debug(request.environ["username"]) # Log current userid
-  #---Decouple JWT verification with middleware---
   try:
     # Request is authenticated
     claims = cognito_jwt_token.verify(access_token)
     app.logger.debug("This request is authenticated")
+    #---Decouple JWT verification with middleware---
+    app.logger.debug("Got from Middleware: User auth is")
+    app.logger.debug(request.environ["isAuthenticated"])
+    app.logger.debug(request.environ["username"]) # Log current userid
+    #---Decouple JWT verification with middleware---
     # app.logger.debug(claims)
     # app.logger.debug(claims['username'])
     data = HomeActivities.run(cognito_user_id=claims['username'])
