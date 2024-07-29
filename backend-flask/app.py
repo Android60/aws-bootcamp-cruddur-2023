@@ -165,9 +165,9 @@ def data_home():
     claims = cognito_jwt_token.verify(access_token)
     app.logger.debug("This request is authenticated")
     #---Decouple JWT verification with middleware---
-    app.logger.debug("Got from Middleware: User auth is")
-    app.logger.debug(request.environ["isAuthenticated"])
-    app.logger.debug(request.environ["username"]) # Log current userid
+    # app.logger.debug("Got from Middleware: User auth is")
+    # app.logger.debug(request.environ["isAuthenticated"])
+    # app.logger.debug(request.environ["username"]) # Log current userid
     #---Decouple JWT verification with middleware---
     # app.logger.debug(claims)
     # app.logger.debug(claims['username'])
