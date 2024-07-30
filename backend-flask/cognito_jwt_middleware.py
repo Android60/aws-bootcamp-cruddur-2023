@@ -22,20 +22,20 @@ class middleware():
         user_pool_client_id=os.getenv("AWS_COGNITO_USER_POOL_CLIENT_ID"),
         region=os.getenv("AWS_DEFAULT_REGION")
         )
-        LOGGER.info(request.headers)
+        # LOGGER.info(request.headers)
         access_token = CognitoJwtToken.extract_access_token(request.headers)
         try:
             # Request is authenticated
             claims = cognito_jwt_token.verify(access_token)
-            LOGGER.info("Middleware: This request is authenticated")
+            # LOGGER.info("Middleware: This request is authenticated")
             # LOGGER.info(claims)
             # LOGGER.info(claims['username'])
             environ["isAuthenticated"] = True
             environ["username"] = claims['username']
         except TokenVerifyError as e:
             # Request is not authenticated
-            LOGGER.info("Middleware: This request is not authenticated")
-            LOGGER.info(e)
+            # LOGGER.info("Middleware: This request is not authenticated")
+            # LOGGER.info(e)
             environ["isAuthenticated"] = False
         return self.app(environ, start_response)
         # res = Response(u'Authorization failed', mimetype= 'text/plain', status=401)
