@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, timezone
 from opentelemetry import trace
-import logging
 
 from lib.db import pool, query_wrap_array
 
@@ -8,10 +7,6 @@ tracer = trace.get_tracer("home.activities")
 
 class HomeActivities:
   def run(cognito_user_id=None):
-    LOGGER = logging.getLogger(__name__) # Initialize Logger
-    LOGGER.setLevel(logging.DEBUG)
-    console_handler = logging.StreamHandler() # Log to console
-    LOGGER.addHandler(console_handler)
 
     sql = query_wrap_array("""
       SELECT
@@ -36,9 +31,6 @@ class HomeActivities:
         # the first field being the data
         json = cur.fetchone()
 
-    LOGGER.info("JSON from DB:///////////")
-    for record in json:
-      LOGGER.info(record)
     return json[0]
 
     # Logger.info("HomeActivities")
