@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timedelta, timezone
-from lib.db import query_commit, print_psycopg_err
+from lib.db import Db
 class CreateActivity:
   def run(message, user_handle, ttl):
     model = {
@@ -53,6 +53,7 @@ class CreateActivity:
     return model
   def create_activity(user_uuid, message, expires_at):
     user_uuid = uuid.uuid4()
+    db = Db()
     sql = f"""
     INSERT INTO (
       user_uuid
@@ -61,5 +62,7 @@ class CreateActivity:
       "{user_uuid}",
       "{message}",
       "{expires_at}"
-    )
+    ) RETURNING uuid;
     """
+    uuid = db.query_commit_returning_id(sql, user_uuid, message, expires_at)
+  
