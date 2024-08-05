@@ -3,9 +3,11 @@ Postgres Connection Pool
 """
 
 from psycopg_pool import ConnectionPool
+from flask import current_app as app
 import os
 import sys
 import logging
+import re
 
 class Db:
   def __init__(self):
@@ -15,55 +17,67 @@ class Db:
     connection_url = os.getenv("CONNECTION_URL")
     self.pool = ConnectionPool(connection_url)
 
-  def query_commit_returning_id(self,sql,*args):
+  def template(self,*args):
+    pathing = list((app.root_path,'db','sql',) + args)
+    pathing[-1] = pathing[-1] + ".sql"
+    template_path = os.path.join(*pathing)
+    with open(template_path, 'r') as f:
+      template_content = f.read()
+    return template_content
+
+  def print_sql(self, title, sql):
+    cyan = '\033[96m'
+    no_color = '\033[0m'
+    print(f'{cyan}SQL STATEMENT-[{title}]------{no_color}',flush=True)
+    print(sql, flush=True)
+
+  def query_commit(self, sql, params={}):
+    self.print_sql('Commit Return', sql)
+    pattern = r"\bRETURNING\b"
+    is_returning_id = re.search(pattern,sql)
+    print('open is assigned to %r' % open, flush=True)
+    if is_returning_id:
+      print("Found a match",flush=True)
+    else:
+      print("No match",flush=True)
     try:
-      conn = self.pool.connection()
-      cur = conn.cursor()
-      cur.execute(sql)
-      returning_id = cur.fetchone()[0]
-      conn.commit()
-      return returning_id
+      with self.pool.connection() as conn:
+        cur = conn.cursor()
+        print("Params:\n",flush=True)
+        print(params,flush=True)
+        cur.execute(sql,params)
+        if is_returning_id:
+          returning_id = cur.fetchone()[0]
+        conn.commit()
+        if is_returning_id:
+          return returning_id
     except Exception as err:
       self.print_psycopg_err(err)
       # conn.rollback()
 
-  def query_commit(self,sql):
-    try:
-      conn = self.pool.connection()
-      cur = conn.cursor()
-      cur.execute(sql)
-      conn.commit()
-    except Exception as err:
-      print_psycopg_err(err)
-      # conn.rollback()
-
-  def query_array_json(self, sql):
+  def query_array_json(self, sql, params={}):
     wrapped_sql = self.query_wrap_array(sql)
     with self.pool.connection() as conn:
       with conn.cursor() as cur:
-        cur.execute(wrapped_sql)
+        cur.execute(wrapped_sql, params)
         # this will return a tuple
         # the first field being the data
         json = cur.fetchone()
         return json[0]
 
-  def query_object_json(self, sql):
+  def query_object_json(self, sql, params={}):
     wrapped_sql = self.query_wrap_object(sql)
     with self.pool.connection() as conn:
       with conn.cursor() as cur:
-        cur.execute(wrapped_sql)
+        cur.execute(wrapped_sql, params)
         # this will return a tuple
         # the first field being the data
         json = cur.fetchone()
-        LOGGER = logging.getLogger(__name__) # Initialize Logger
-        LOGGER.setLevel(logging.DEBUG)
-        console_handler = logging.StreamHandler() # Log to console
-        LOGGER.addHandler(console_handler)
-        LOGGER.info("Got JSON from DB")
-        LOGGER.info(json)
-        if (json is None):
+        print(params, flush=True)
+        if json == None:
           return "{}"
-        else: return json[0]
+        else:
+          return json[0]
 
   def print_psycopg_err(self, err):
     # get details about the exception
@@ -73,15 +87,15 @@ class Db:
     line_num = traceback.tb_lineno
 
     # print the connect() error
-    print ("\npsycopg2 ERROR:", err, "on line number:", line_num)
-    print ("psycopg2 traceback:", traceback, "-- type:", err_type)
+    print ("\npsycopg2 ERROR:", err, "on line number:", line_num, flush=True)
+    print ("psycopg2 traceback:", traceback, "-- type:", err_type, flush=True)
 
     # psycopg2 extensions.Diagnostics object attribute
-    print ("\nextensions.Diagnostics:", err.diag)
+    # print ("\nextensions.Diagnostics:", err.diag)
 
     # print the pgcode and pgerror exceptions
-    print ("pgerror:", err.pgerror)
-    print ("pgcode:", err.pgcode, "\n")
+    # print ("pgerror:", err.pgerror)
+    # print ("pgcode:", err.pgcode, "\n")
 
   def query_wrap_object(self, template):
     sql = f"""
@@ -99,3 +113,4 @@ class Db:
     """
     return sql
   
+db = Db()
