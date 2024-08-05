@@ -8,7 +8,7 @@ tracer = trace.get_tracer("home.activities")
 class HomeActivities:
   def run(cognito_user_id=None):
     sql = db.template('activities','home')
-    results = db.query_object_json(sql)
+    results = db.query_array_json(sql)
 
 
     return results
