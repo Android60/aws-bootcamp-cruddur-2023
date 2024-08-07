@@ -55,6 +55,14 @@ class Db:
       self.print_psycopg_err(err)
       # conn.rollback()
 
+  def query_value(self,sql,params={}):
+    self.print_sql('Query single value',sql,)
+    with self.pool.connection() as conn:
+      with conn.cursor() as cur:
+        cur.execute(sql,params)
+        json = cur.fetchone()
+        return json[0]
+
   def query_array_json(self, sql, params={}):
     wrapped_sql = self.query_wrap_array(sql)
     with self.pool.connection() as conn:
