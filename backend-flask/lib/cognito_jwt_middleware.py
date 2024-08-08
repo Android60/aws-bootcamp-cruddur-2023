@@ -14,7 +14,7 @@ class middleware():
         LOGGER.setLevel(logging.DEBUG)
         console_handler = logging.StreamHandler() # Log to console
         LOGGER.addHandler(console_handler)
-        LOGGER.info("Middleware got the call")
+        # LOGGER.info("Middleware got the call")
         request = Request(environ)
         # LOGGER.info(request.environ)
         cognito_jwt_token = CognitoJwtToken(
@@ -35,7 +35,7 @@ class middleware():
             environ["sub"] = claims['sub']
         except TokenVerifyError as e:
             # Request is not authenticated
-            LOGGER.info("Middleware: This request is not authenticated")
+            # LOGGER.info("Middleware: This request is not authenticated")
             LOGGER.info(e)
             environ["isAuthenticated"] = False
         return self.app(environ, start_response)

@@ -124,25 +124,29 @@ def after_request(response):
 
 @app.route("/api/message_groups", methods=['GET'])
 def data_message_groups():
-  user_handle  = 'andrewbrown'
-  model = MessageGroups.run(user_handle=user_handle)
-  if model['errors'] is not None:
-    return model['errors'], 422
-  else:
-    return model['data'], 200
+  try:
+    cognito_user_id  = request.environ["sub"]
+    model = MessageGroups.run(cognito_user_id=cognito_user_id)
+    if model['errors'] is not None:
+      return model['errors'], 422
+    else:
+      return model['data'], 200
+  except TokenVerifyError as e:
+    return {}, 401
 
-@app.route("/api/messages/@<string:handle>", methods=['GET'])
-def data_messages(handle):
-  user_sender_handle = 'andrewbrown'
-  user_receiver_handle = request.args.get('user_reciever_handle')
-
-  model = Messages.run(user_sender_handle=user_sender_handle, user_receiver_handle=user_receiver_handle)
-  if model['errors'] is not None:
-    return model['errors'], 422
-  else:
-    return model['data'], 200
-  return
-
+@app.route("/api/messages/@<string:message_group_uuid>", methods=['GET'])
+def data_messages(message_group_uuid):
+  try:
+    cognito_user_id  = request.environ["sub"]
+    model = Messages.run (cognito_user_id=cognito_user_id, message_group_uuid=message_group_uuid)
+    if model['errors'] is not None:
+      return model['errors'], 422
+    else:
+      return model['data'], 200
+    return
+  except TokenVerifyError as e:
+    return {}, 401
+  
 @app.route("/api/messages", methods=['POST','OPTIONS'])
 @cross_origin()
 def data_create_message():
@@ -165,9 +169,9 @@ def data_home():
     claims = cognito_jwt_token.verify(access_token)
     app.logger.debug("This request is authenticated")
     #---Decouple JWT verification with middleware---
-    # app.logger.debug("Got from Middleware: User auth is")
-    # app.logger.debug(request.environ["isAuthenticated"])
-    # app.logger.debug(request.environ["username"]) # Log current userid
+    app.logger.debug("Got from Middleware: User auth is")
+    app.logger.debug(request.environ["isAuthenticated"])
+    app.logger.debug(request.environ["sub"]) # Log current userid
     #---Decouple JWT verification with middleware---
     # app.logger.debug(claims)
     # app.logger.debug(claims['username'])

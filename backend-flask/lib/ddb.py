@@ -53,7 +53,7 @@ class Ddb:
     table_name = 'cruddur-messages'
     query_params = {
       'TableName': table_name,
-      'KeyConditionExpression': 'pk = :pk AND begins_with(sk,:year)',
+      'KeyConditionExpression': 'pk = :pk AND begins_with(sk, :year)',
       'ScanIndexForward': False,
       'Limit': 40,
       'ExpressionAttributeValues': {
@@ -61,7 +61,8 @@ class Ddb:
         ':pk': {'S': f"MSG#{message_group_uuid}"}
       }
     }
-
+    print("-------Params--------", flush=True)
+    print(query_params, flush=True)
     response = client.query(**query_params)
     items = response['Items']
     items.reverse()
@@ -76,6 +77,6 @@ class Ddb:
         'message': item['message']['S'],
         'created_at': created_at
       })
-    print("EEE")
-    print(results)
+    print("EEE-------------------------------",flush=True)
+    print(results, flush=True)
     return results
