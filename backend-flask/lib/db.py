@@ -35,16 +35,9 @@ class Db:
     self.print_sql('Commit Return', sql)
     pattern = r"\bRETURNING\b"
     is_returning_id = re.search(pattern,sql)
-    print('open is assigned to %r' % open, flush=True)
-    if is_returning_id:
-      print("Found a match",flush=True)
-    else:
-      print("No match",flush=True)
     try:
       with self.pool.connection() as conn:
         cur = conn.cursor()
-        print("Params:\n",flush=True)
-        print(params,flush=True)
         cur.execute(sql,params)
         if is_returning_id:
           returning_id = cur.fetchone()[0]
