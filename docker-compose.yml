@@ -18,6 +18,7 @@ services:
       AWS_COGNITO_USER_POOL_ID: "us-east-1_7OaMVeDno"
       AWS_COGNITO_USER_POOL_CLIENT_ID: "7n7jv66d4t2ft4ujt4pgik16ii"
       CONNECTION_URL: "postgresql://postgres:password@db:5432/cruddur"
+      AWS_DDB_ENDPOINT_URL: "http://dynamodb-local:8000"
       # CONNECTION_URL: "$PROD_CONNECTION_URL"
     build: ./backend-flask
     healthcheck:

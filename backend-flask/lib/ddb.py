@@ -6,7 +6,7 @@ import os
 
 class Ddb:
   def client():
-    endpoint_url = os.getenv("AWS_ENDPOINT_URL")
+    endpoint_url = os.getenv("AWS_DDB_ENDPOINT_URL")
     if endpoint_url:
       attrs = { 'endpoint_url': endpoint_url }
     else:
