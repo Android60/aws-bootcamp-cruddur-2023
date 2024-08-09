@@ -150,16 +150,19 @@ def data_messages(message_group_uuid):
 @app.route("/api/messages", methods=['POST','OPTIONS'])
 @cross_origin()
 def data_create_message():
-  user_sender_handle = 'andrewbrown'
-  user_receiver_handle = request.json['user_receiver_handle']
-  message = request.json['message']
+  try:
+    cognito_user_id  = request.environ["sub"]
+    user_receiver_handle = request.json['handle']
+    message_group_uuid = request.json['message_group_uuid']
+    message = request.json['message']
 
-  model = CreateMessage.run(message=message,user_sender_handle=user_sender_handle,user_receiver_handle=user_receiver_handle)
-  if model['errors'] is not None:
-    return model['errors'], 422
-  else:
-    return model['data'], 200
-  return
+    model = CreateMessage.run(message=message,cognito_user_id=cognito_user_id,message_group_uuid=message_group_uuid,user_receiver_handle=user_receiver_handle)
+    if model['errors'] is not None:
+      return model['errors'], 422
+    else:
+      return model['data'], 200
+  except TokenVerifyError as e:
+    return {}, 401
 
 @app.route("/api/activities/home", methods=['GET'])
 def data_home():
