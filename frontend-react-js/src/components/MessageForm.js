@@ -26,9 +26,6 @@ export default function ActivityForm(props) {
       else {
         json.message_group_uuid = params.message_group_uuid
       }
-       body: JSON.stringify({
-        message: message
-      })
       const res = await fetch(backend_url, {
         method: "POST",
         headers: {
@@ -36,7 +33,7 @@ export default function ActivityForm(props) {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({json) 
+        body: JSON.stringify(json) 
       });
       let data = await res.json();
       if (res.status === 200) {
