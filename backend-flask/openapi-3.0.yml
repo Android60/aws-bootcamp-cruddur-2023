@@ -119,7 +119,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/MessageGroup'
-  /api/messages/@{handle}:
+  /api/messages/{handle}:
     get:
       description: 'Returns private communication between two users'
       tags:
