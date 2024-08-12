@@ -154,7 +154,7 @@ def data_create_message():
   try:
     cognito_user_id  = request.environ["sub"]
     message_group_uuid   = request.json.get('message_group_uuid',None)
-    user_receiver_handle = request.json.get('user_receiver_handle',None)
+    user_receiver_handle = request.json.get('handle',None)
     message = request.json['message']
 
     if message_group_uuid == None:
