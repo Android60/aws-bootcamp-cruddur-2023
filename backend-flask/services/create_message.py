@@ -32,7 +32,7 @@ class CreateMessage:
       # return what we provided
       model['data'] = {
         'display_name': 'Andrew Brown',
-        'handle':  user_sender_handle,
+        'handle':  cognito_user_id,
         'message': message
       }
     else:
