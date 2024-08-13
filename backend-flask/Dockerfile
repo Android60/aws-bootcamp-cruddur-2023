@@ -1,9 +1,8 @@
 FROM python:3.10-slim-buster AS builder
 
-WORKDIR backend-flask
+WORKDIR /backend-flask
 COPY . .
 RUN pip3 install -r requirements.txt
-RUN apt update && apt install -y curl
 
 # FROM builder AS dev
 ENV FLASK_ENV=development
