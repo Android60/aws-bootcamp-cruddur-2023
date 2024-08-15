@@ -111,7 +111,7 @@ cors = CORS(
   methods="OPTIONS,GET,HEAD,POST"
 )
 
-@app.route('/api/health-check')
+@app.route('/api/health')
 def health_check():
   return {'success': True}, 200
 
