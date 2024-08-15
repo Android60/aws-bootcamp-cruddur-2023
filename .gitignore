@@ -1,2 +1,3 @@
 **.DS_Store
 docker/
+frontend-react-js/build/*
