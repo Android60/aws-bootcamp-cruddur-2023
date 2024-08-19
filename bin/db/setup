@@ -7,7 +7,7 @@ LABEL="Setting up DB"
 printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
 ABS_PATH=$(readlink -f "$0")
-PROJECT_PATH="$(dirname "$(dirname "$(dirname "$(dirname "$ABS_PATH")")")")"
+PROJECT_PATH="$(dirname "$(dirname "$(dirname "$ABS_PATH")")")"
 bin_path="$PROJECT_PATH/bin"
 
 source "$bin_path/db/drop"
