@@ -3,6 +3,6 @@
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 ABS_PATH=$(readlink -f "$0")
 PROJECT_PATH="$(dirname "$(dirname "$(dirname "$(dirname "$ABS_PATH")")")")"
-export DIR="$PROJECT_PATH/frontend-react-js"
+export DIR="$PROJECT_PATH/backend-flask"
 aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
 docker build -t backend-flask-prod -f "$DIR/Dockerfile.prod" "$DIR"
