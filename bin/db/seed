@@ -1,6 +1,9 @@
 #!/bin/bash
 
-seed_path="db/seed.sql"
+ABS_PATH=$(readlink -f "$0")
+PROJECT_PATH="$(dirname "$(dirname "$(dirname "$ABS_PATH")")")"
+DIR="$PROJECT_PATH"
+SEED_PATH="$PROJECT_PATH/backend-flask/db/seed.sql"
 CYAN='\033[1;36m'
 NO_COLOR='\033[0m'
 LABEL="Loading seed data into DB"
@@ -14,4 +17,4 @@ else
     CON_URL=$CONNECTION_URL
 fi
 
-psql $CON_URL cruddur < $seed_path
+psql $CON_URL cruddur < $SEED_PATH
