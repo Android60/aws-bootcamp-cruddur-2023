@@ -1,4 +1,5 @@
 #!/bin/bash
+
 export DIR="/workspaces/aws-bootcamp-cruddur-2023/backend-flask"
 export BIN_DOCKER_DIR="$DIR/bin/docker"
 source "$BIN_DOCKER_DIR/build/frontend-react-js-prod"
