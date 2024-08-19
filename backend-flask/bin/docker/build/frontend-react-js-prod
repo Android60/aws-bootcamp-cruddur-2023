@@ -1,0 +1,4 @@
+#!/bin/bash
+export DIR="/workspaces/aws-bootcamp-cruddur-2023/frontend-react-js"
+aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+docker build -t frontend-react-js-prod -f "$DIR/Dockerfile.prod" "$DIR"
