@@ -1,0 +1,7 @@
+#!/bin/bash
+
+CLUSTER_NAME="cruddur"
+SERVICE_NAME="backend-flask"
+TASK_DEFINITION="backend-flask"
+TASK_DEFINITION_ARN=$(aws ecs describe-task-definition --task-definition $TASK_DEFINITION --query 'taskDefinition.taskDefinitionArn' --output text)
+aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --task-definition $TASK_DEFINITION_ARN --force-new-deployment
