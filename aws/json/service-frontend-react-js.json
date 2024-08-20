@@ -18,12 +18,8 @@
           "sg-041a70ec8a4d42eef"
         ],
         "subnets": [
-            "subnet-0f6aa4899d5e1fa86",
-            "subnet-088d7e3604a2350d3",
-            "subnet-0c431a10e3ad95f42",
             "subnet-02bb81e16d53c6ce2",
-            "subnet-0edd55c12bc0931cd",
-            "subnet-0cc1c81823825a533"
+            "subnet-0edd55c12bc0931cd"
         ]
       }
     },
