@@ -3,6 +3,6 @@
 ABS_PATH=$(readlink -f "$0")
 PROJECT_PATH="$(dirname "$(dirname "$(dirname "$(dirname "$ABS_PATH")")")")"
 DIR="$PROJECT_PATH"
-BIN_DOCKER_DIR="$DIR/bin/docker"
-source "$BIN_DOCKER_DIR/build/frontend-react-js-prod"
-source "$BIN_DOCKER_DIR/push/frontend-react-js-prod"
+BIN_DOCKER_DIR="$DIR/bin/backend/docker"
+source "$BIN_DOCKER_DIR/build"
+source "$BIN_DOCKER_DIR/push"
