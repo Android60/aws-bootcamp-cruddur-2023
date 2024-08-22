@@ -83,12 +83,12 @@ class Ddb:
     return results
 
   def create_message(client,message_group_uuid, message, my_user_uuid, my_user_display_name, my_user_handle):
-    now = datetime.now(timezone.utc).astimezone().isoformat()
+    now = datetime.now().isoformat()
     created_at = now
     message_uuid = str(uuid.uuid4())
 
     record = {
-      'pk':   {'S': f"MSG#{message_group_uuid}"},
+      'pk':   {'S': f"MSG#{message_group_uuid}"}, 
       'sk':   {'S': created_at },
       'message': {'S': message},
       'message_uuid': {'S': message_uuid},
