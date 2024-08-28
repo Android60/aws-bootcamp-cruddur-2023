@@ -19,7 +19,8 @@ export class ThumbingServerlessCdkStack extends cdk.Stack {
     const folderInput: string = process.env.THUMBING_S3_FOLDER_INPUT as string;
     const folderOutput: string = process.env.THUMBING_S3_FOLDER_OUTPUT as string;
 
-    const bucket = this.createBucket(bucketName);
+    // const bucket = this.createBucket(bucketName);
+    const bucket = this.importBucket(bucketName);
     const lambda = this.createLambda(functionPath, bucketName, folderInput, folderOutput);
 
     this.createS3NotifyToLambda(folderInput,lambda,bucket)
@@ -32,6 +33,13 @@ export class ThumbingServerlessCdkStack extends cdk.Stack {
     });
     return bucket;
   }
+
+  importBucket(bucketName: string): s3.IBucket {
+    const bucket = s3.Bucket.fromBucketName(this, "AssetsBucket", bucketName);
+    return bucket;
+  }
+
+
   createLambda(functionPath: string, bucketName: string, folderInput: string, folderOutput: string): lambda.IFunction {
     const lambdaFunction = new lambda.Function(this, 'ThumbLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
