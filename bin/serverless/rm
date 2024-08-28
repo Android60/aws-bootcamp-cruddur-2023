@@ -1,0 +1,3 @@
+#!/bin/bash
+
+aws s3 rm "s3://assets.$CRUDDUR_DOMAIN/avatars/original/spock_with_cat.jpg"
