@@ -16,5 +16,5 @@ else
 fi
 
 echo " Deleting table $TABLE_NAME"
-aws dynamodb delete-table $ENDPOINT_URL --table-name $TABLE_NAME
+aws dynamodb delete-table $ENDPOINT_URL --table-name $TABLE_NAME --no-cli-pager
  
