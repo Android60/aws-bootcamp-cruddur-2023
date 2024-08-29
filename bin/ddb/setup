@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e # stop if it fails at any point
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="Setting up DynamoDB local"
+printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
+
+ABS_PATH=$(readlink -f "$0")
+PROJECT_PATH="$(dirname "$(dirname "$(dirname "$ABS_PATH")")")"
+bin_path="$PROJECT_PATH/bin"
+
+source "$bin_path/ddb/drop" cruddur-messages || true
+python3 "$bin_path/ddb/schema-load"
+python3 "$bin_path/ddb/seed"
