@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from aws_xray_sdk.core import xray_recorder
 
+from lib.db import db
+
 class UserActivities:
   def run(user_handle):
     xray_recorder.begin_subsegment('user_activities')   
@@ -14,21 +16,21 @@ class UserActivities:
     if user_handle == None or len(user_handle) < 1:
       model['errors'] = ['blank_user_handle']
     else:
+      print("handle issss")
+      print(user_handle)
+      sql = db.template('users','show')
+      subsegment = xray_recorder.begin_subsegment('query-db')
+      results = db.query_object_json(sql, {'handle':user_handle})
+      print("got results:.............")
+      print(results, flush=True)
       now = datetime.now()
-      results = [{
-        'uuid': '248959df-3079-4947-b847-9e0892d1bab4',
-        'handle':  'Andrew Brown',
-        'message': 'Cloud is fun!',
-        'created_at': (now - timedelta(days=1)).isoformat(),
-        'expires_at': (now + timedelta(days=31)).isoformat()
-      }]
+
+      dict = {
+        "now": now.isoformat(),
+        "results-size": len(results)
+      }
+      subsegment.put_metadata('key', dict, 'namespace')
+      xray_recorder.end_subsegment()
+      xray_recorder.end_subsegment()
       model['data'] = results
-    subsegment = xray_recorder.begin_subsegment('mock-data')
-    dict = {
-      "now": now.isoformat(),
-      "results-size": len(model['data'])
-    }
-    subsegment.put_metadata('key', dict, 'namespace')
-    xray_recorder.end_subsegment()
-    xray_recorder.end_subsegment()
-    return model
+      return model
