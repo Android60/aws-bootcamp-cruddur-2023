@@ -22,7 +22,7 @@ class UserActivities:
       subsegment = xray_recorder.begin_subsegment('query-db')
       results = db.query_object_json(sql, {'handle':user_handle})
       print("got results:.............")
-      print(results, flush=True)
+      print(results)
       now = datetime.now()
 
       dict = {

@@ -29,7 +29,7 @@ class Db:
     cyan = '\033[96m'
     no_color = '\033[0m'
     print(f'{cyan}SQL STATEMENT-[{title}]------{no_color}',flush=True)
-    print(sql, flush=True)
+    print(sql)
 
   def query_commit(self, sql, params={}):
     self.print_sql('Commit Return', sql)
@@ -74,7 +74,7 @@ class Db:
         # this will return a tuple
         # the first field being the data
         json = cur.fetchone()
-        print(params, flush=True)
+        print(params)
         if json == None:
           return "{}"
         else:
@@ -88,8 +88,8 @@ class Db:
     line_num = traceback.tb_lineno
 
     # print the connect() error
-    print ("\npsycopg2 ERROR:", err, "on line number:", line_num, flush=True)
-    print ("psycopg2 traceback:", traceback, "-- type:", err_type, flush=True)
+    print ("\npsycopg2 ERROR:", err, "on line number:", line_num)
+    print ("psycopg2 traceback:", traceback, "-- type:", err_type)
 
     # psycopg2 extensions.Diagnostics object attribute
     # print ("\nextensions.Diagnostics:", err.diag)
