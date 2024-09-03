@@ -31,7 +31,7 @@ class Db:
     print(f'{cyan}SQL STATEMENT-[{title}]------{no_color}',flush=True)
     print(sql)
 
-  def query_commit(self, sql, params={}):
+  def query_commit(self, sql, params={}, verbose=True):
     self.print_sql('Commit Return', sql)
     pattern = r"\bRETURNING\b"
     is_returning_id = re.search(pattern,sql)
@@ -48,15 +48,16 @@ class Db:
       self.print_psycopg_err(err)
       # conn.rollback()
 
-  def query_value(self,sql,params={}):
-    self.print_sql('Query single value',sql,)
+  def query_value(self,sql,params={}, verbose=True):
+    if verbose:
+      self.print_sql('Query single value',sql,)
     with self.pool.connection() as conn:
       with conn.cursor() as cur:
         cur.execute(sql,params)
         json = cur.fetchone()
         return json[0]
 
-  def query_array_json(self, sql, params={}):
+  def query_array_json(self, sql, params={}, verbose=True):
     wrapped_sql = self.query_wrap_array(sql)
     with self.pool.connection() as conn:
       with conn.cursor() as cur:
@@ -66,7 +67,7 @@ class Db:
         json = cur.fetchone()
         return json[0]
 
-  def query_object_json(self, sql, params={}):
+  def query_object_json(self, sql, params={}, verbose=True):
     wrapped_sql = self.query_wrap_object(sql)
     with self.pool.connection() as conn:
       with conn.cursor() as cur:
@@ -74,7 +75,8 @@ class Db:
         # this will return a tuple
         # the first field being the data
         json = cur.fetchone()
-        print(params)
+        if verbose:
+          print(params)
         if json == None:
           return "{}"
         else:
