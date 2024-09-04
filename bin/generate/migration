@@ -9,7 +9,8 @@ else:
   print("pass a filename: eg. ./bin/generate/migration hello")
   exit(0)
 
-timestamp = str(time.time()).replace(".","")
+current_ts = str(time.time())
+timestamp = current_ts.replace(".","")
 
 filename = f"{timestamp}_{name}.py"
 
