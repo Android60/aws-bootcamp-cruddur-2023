@@ -26,15 +26,16 @@ export default function ProfileForm(props) {
     try {
       const res = await fetch(presignedUrl, {
         method: "PUT",
-        body: formData,
+        body: file,
         headers: {
-          'Origin': "http://127.0.0.1:3000",
+          'Origin': `${process.env.REACT_APP_FRONTEND_URL}`,
+          'Accept': 'application/json',
           'Content-Type': type
         }
       });
       let data = await res.json();
       if (res.status === 200) {
-        console.log('presigned url', data)
+        console.log('File uploaded', data)
       } else {
         console.log(res)
       }
@@ -51,7 +52,7 @@ export default function ProfileForm(props) {
       const res = await fetch(backend_url, {
         method: "POST",
         headers: {
-          'Origin': "http://127.0.0.1:3000",
+          'Origin': `${process.env.REACT_APP_FRONTEND_URL}`,
           'Authorization': `Bearer ${access_token}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
