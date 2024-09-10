@@ -8,7 +8,6 @@ export default function ProfileForm(props) {
   const [displayName, setDisplayName] = React.useState(0);
 
   React.useEffect(()=>{
-    console.log('useEffects',props)
     setBio(props.profile.bio);
     setDisplayName(props.profile.display_name);
   }, [props.profile])
@@ -46,7 +45,7 @@ export default function ProfileForm(props) {
 
   const s3uploadkey = async ()=> {
     try {
-      const backend_url = "https://tih2carech.execute-api.us-east-1.amazonaws.com/avatars/key_upload"
+      const backend_url = `${process.env.REACT_APP_API_GATEWAY_URL}/avatars/key_upload`
       await getAccessToken()
       const access_token = localStorage.getItem("access_token")
       const res = await fetch(backend_url, {
