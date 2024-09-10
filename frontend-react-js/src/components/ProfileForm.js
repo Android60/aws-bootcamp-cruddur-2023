@@ -18,12 +18,14 @@ export default function ProfileForm(props) {
   const s3upload = async (event)=> {
     event.preventDefault();
     const file = event.target.files[0]
+    const filename = file.name
     const type = file.type
     const preview_image_url = URL.createObjectURL(file)
     console.log("file",file)
-    const formData = new FormData();
-    formData.append('file',file)
-    let presignedUrl = await s3uploadkey()
+    const fileparts = filename.split('.')
+    const extension = fileparts[fileparts.length-1]
+    let presignedUrl = await s3uploadkey(extension)
+
     console.log(presignedUrl)
     try {
       const res = await fetch(presignedUrl, {
@@ -35,9 +37,8 @@ export default function ProfileForm(props) {
           'Content-Type': type
         }
       });
-      let data = await res.json();
       if (res.status === 200) {
-        console.log('File uploaded', data)
+        console.log('File uploaded')
       } else {
         console.log(res)
       }
@@ -46,13 +47,17 @@ export default function ProfileForm(props) {
     }
   }
 
-  const s3uploadkey = async ()=> {
+  const s3uploadkey = async (extension)=> {
     try {
       const api_gw = `${process.env.REACT_APP_API_GATEWAY_URL}/avatars/key_upload`
       await getAccessToken()
       const access_token = localStorage.getItem("access_token")
+      const json = {
+        extension: extension
+      }
       const res = await fetch(api_gw, {
         method: "POST",
+        body: JSON.stringify(json),
         headers: {
           'Origin': `${process.env.REACT_APP_FRONTEND_URL}`,
           'Authorization': `Bearer ${access_token}`,
