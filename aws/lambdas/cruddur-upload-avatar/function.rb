@@ -17,9 +17,11 @@ def lambda_handler(event:, context:)
   end
   
   sub = event['requestContext']['authorizer']['lambda']['sub']
+  body = JSON.parse(event['body'])
+  extension = body['extension']
   s3 = Aws::S3::Resource.new
   bucket_name = ENV["UPLOADS_BUCKET_NAME"]
-  object_key = 'mock.jpg'
+  object_key = "#{sub}.#{extension}"
   obj = s3.bucket(bucket_name).object(object_key)
   url = obj.presigned_url(:put, expires_in: 300)
   body = {url: url}.to_json
