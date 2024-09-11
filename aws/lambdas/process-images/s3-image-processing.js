@@ -38,7 +38,8 @@ async function uploadProcessedImage(client,dstBucket,dstKey,image){
     Bucket: dstBucket,
     Key: dstKey,
     Body: image,
-    ContentType: 'image/jpeg'
+    ContentType: 'image/jpeg',
+    CacheControl: 'max-age=60'
   };
   console.log('params',params)
   const command = new PutObjectCommand(params);
