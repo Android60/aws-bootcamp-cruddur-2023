@@ -3,6 +3,7 @@
   flex-direction: column;
   overflow: hidden;
   flex-shrink: 0;
+  background: var(--fg)
 }
 
 .activity_feed_collection {
@@ -20,4 +21,8 @@
   color: #fff;
   font-weight: 800;
   font-size: 20px;
+}
+
+.activity_feed_heading .cruds_count{
+  color: rgb(255,255,255,0.5);
 }

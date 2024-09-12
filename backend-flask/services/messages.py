@@ -16,8 +16,8 @@ class Messages:
 
     ddb = Ddb.client()
     data = Ddb.list_messages(ddb, message_group_uuid)
-    print("list_messages:",data, flush=True)
-    print(message_group_uuid, flush=True)
+    print("list_messages:",data)
+    print(message_group_uuid)
 
     model['data'] = data
     return model

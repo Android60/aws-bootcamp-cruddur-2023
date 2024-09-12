@@ -46,15 +46,15 @@ class CreateMessage:
         'cognito_user_id': cognito_user_id,
         'user_receiver_handle': rev_handle
       })
-      print("USERS =-=-=-=-==", flush=True)
-      print(users, flush=True)
+      print("USERS =-=-=-=-==")
+      print(users)
 
       my_user    = next((item for item in users if item["kind"] == 'sender'), None)
       other_user = next((item for item in users if item["kind"] == 'recv')  , None)
 
-      print("USERS=[my-user]==", flush=True)
+      print("USERS=[my-user]==")
       print(my_user)
-      print("USERS=[other-user]==", flush=True)
+      print("USERS=[other-user]==")
       print(other_user)
 
       ddb = Ddb.client()
@@ -68,9 +68,9 @@ class CreateMessage:
           my_user_display_name=my_user['display_name'],
           my_user_handle=my_user['handle']
         )
-        print("Create message:", flush=True)
-        print(message, flush=True)
-        print(message_group_uuid, flush=True)
+        print("Create message:")
+        print(message)
+        print(message_group_uuid)
       elif (mode == "create"):
         data = Ddb.create_message_group(
           client=ddb,

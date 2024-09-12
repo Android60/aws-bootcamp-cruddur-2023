@@ -62,8 +62,8 @@ class Ddb:
         ':pk': {'S': f"MSG#{message_group_uuid}"}
       }
     }
-    # print("-------Params--------", flush=True)
-    # print(query_params, flush=True)
+    # print("-------Params--------")
+    # print(query_params)
     response = client.query(**query_params)
     items = response['Items']
     items.reverse()
@@ -79,7 +79,7 @@ class Ddb:
         'created_at': created_at
       })
     # print("EEE-------------------------------",flush=True)
-    # print(results, flush=True)
+    # print(results)
     return results
 
   def create_message(client,message_group_uuid, message, my_user_uuid, my_user_display_name, my_user_handle):
@@ -104,7 +104,7 @@ class Ddb:
     )
     # print the response
     print("Response from DDB")
-    print(response, flush=True)
+    print(response)
 
     return {
       'message_group_uuid': message_group_uuid,

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+ABS_PATH=$(readlink -f "$0")
+PROJECT_PATH="$(dirname "$(dirname "$(dirname "$ABS_PATH")")")"
+export DIR="$PROJECT_PATH/thumbing-serverless-cdk"
+
+cd $DIR
+npm install
