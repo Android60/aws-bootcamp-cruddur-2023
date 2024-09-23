@@ -6,5 +6,7 @@ Description: |
 Resources:
   ECSCluster:
     Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: cruddur-supercluster
 # Outputs:
 # Metadata:
