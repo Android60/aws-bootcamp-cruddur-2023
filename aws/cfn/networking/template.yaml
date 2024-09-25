@@ -1,4 +1,14 @@
 AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  AzA:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: us-east-1a
+  AzB:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: us-east-1b
+  AzC:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: us-east-1c
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -41,7 +51,7 @@ Resources:
       VpcId: !Ref VPC
       CidrBlock: 10.0.0.0/24
       MapPublicIpOnLaunch: true
-      AvailabilityZone: "us-east-1a"
+      AvailabilityZone: !Ref AzA
       Tags:
       - Key: Name
         Value: CruddurSubnetPubA
@@ -51,7 +61,7 @@ Resources:
       VpcId: !Ref VPC
       CidrBlock: 10.0.1.0/24
       MapPublicIpOnLaunch: true
-      AvailabilityZone: "us-east-1b"
+      AvailabilityZone: !Ref AzB
       Tags:
       - Key: Name
         Value: CruddurSubnetPubB
@@ -61,7 +71,7 @@ Resources:
       VpcId: !Ref VPC
       CidrBlock: 10.0.2.0/24
       MapPublicIpOnLaunch: true
-      AvailabilityZone: "us-east-1c"
+      AvailabilityZone: !Ref AzC
       Tags:
       - Key: Name
         Value: CruddurSubnetPubC
@@ -70,7 +80,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.3.0/24
-      AvailabilityZone: "us-east-1a"
+      AvailabilityZone: !Ref AzA
       Tags:
       - Key: Name
         Value: CruddurSubnetPrivA
@@ -79,7 +89,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.4.0/24
-      AvailabilityZone: "us-east-1b"
+      AvailabilityZone: !Ref AzB
       Tags:
       - Key: Name
         Value: CruddurSubnetPrivB
@@ -88,7 +98,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.5.0/24
-      AvailabilityZone: "us-east-1c"
+      AvailabilityZone: !Ref AzC
       Tags:
       - Key: Name
         Value: CruddurSubnetPrivC
