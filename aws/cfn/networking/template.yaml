@@ -9,23 +9,37 @@ Parameters:
   AzC:
     Type: AWS::EC2::AvailabilityZone::Name
     Default: us-east-1c
+  VpcCidrBlock:
+    Description: "CIDR block for VPC"
+    Type: String
+    Default: 10.0.0.0/16
+  SubnetCidrBlocks:
+    Description: "Comma-delimited list of CIDR blocks for subnets"
+    Type: CommaDelimitedList
+    Default: >
+      10.0.0.0/24,
+      10.0.1.0/24,
+      10.0.2.0/24,
+      10.0.3.0/24,
+      10.0.4.0/24,
+      10.0.5.0/24
 Resources:
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 10.0.0.0/16
+      CidrBlock: !Ref VpcCidrBlock
       EnableDnsHostnames: true
       EnableDnsSupport: true
       InstanceTenancy: default
       Tags:
         - Key: Name
-          Value: CruddurVPC
+          Value: !Sub ${AWS::StackName}-VPC
   IGW:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags: 
         - Key: Name
-          Value: CruddurIGW
+          Value: !Sub ${AWS::StackName}-IGW
   AttachIGW:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -37,7 +51,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
       - Key: Name
-        Value: CruddurRT
+        Value: !Sub ${AWS::StackName}-RT
   DefaultRoute:
     Type: AWS::EC2::Route
     DependsOn: AttachIGW
@@ -49,59 +63,59 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: 10.0.0.0/24
+      CidrBlock: !Select [0, !Ref SubnetCidrBlocks]
       MapPublicIpOnLaunch: true
       AvailabilityZone: !Ref AzA
       Tags:
       - Key: Name
-        Value: CruddurSubnetPubA
+        Value: !Sub ${AWS::StackName}-SubnetPubA
   PubSubnetB:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: 10.0.1.0/24
+      CidrBlock: !Select [1, !Ref SubnetCidrBlocks]
       MapPublicIpOnLaunch: true
       AvailabilityZone: !Ref AzB
       Tags:
       - Key: Name
-        Value: CruddurSubnetPubB
+        Value: !Sub ${AWS::StackName}-SubnetPubB
   PubSubnetC:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: 10.0.2.0/24
+      CidrBlock: !Select [2, !Ref SubnetCidrBlocks]
       MapPublicIpOnLaunch: true
       AvailabilityZone: !Ref AzC
       Tags:
       - Key: Name
-        Value: CruddurSubnetPubC
+        Value: !Sub ${AWS::StackName}-SubnetPubC
   PrivSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: 10.0.3.0/24
+      CidrBlock: !Select [3, !Ref SubnetCidrBlocks]
       AvailabilityZone: !Ref AzA
       Tags:
       - Key: Name
-        Value: CruddurSubnetPrivA
+        Value: !Sub ${AWS::StackName}-SubnetPrivA
   PrivSubnetB:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: 10.0.4.0/24
+      CidrBlock: !Select [4, !Ref SubnetCidrBlocks]
       AvailabilityZone: !Ref AzB
       Tags:
       - Key: Name
-        Value: CruddurSubnetPrivB
+        Value: !Sub ${AWS::StackName}-SubnetPrivB
   PrivSubnetC:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: 10.0.5.0/24
+      CidrBlock: !Select [5, !Ref SubnetCidrBlocks]
       AvailabilityZone: !Ref AzC
       Tags:
       - Key: Name
-        Value: CruddurSubnetPrivC
+        Value: !Sub ${AWS::StackName}-SubnetPrivC
   RouteTableAssociationPubA:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
