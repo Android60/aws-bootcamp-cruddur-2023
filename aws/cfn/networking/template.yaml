@@ -28,6 +28,13 @@ Resources:
       Tags:
       - Key: Name
         Value: CruddurRT
+  myRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachIGW
+    Properties:
+        RouteTableId: !Ref RouteTable
+        DestinationCidrBlock: 0.0.0.0/0
+        GatewayId: !Ref IGW
 # VPC
 # IGW
 # Route Tables
