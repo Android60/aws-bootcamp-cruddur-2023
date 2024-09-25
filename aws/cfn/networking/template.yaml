@@ -10,6 +10,12 @@ Resources:
       Tags:
         - Key: Name
           Value: CruddurVPC
+  IGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags: 
+        - Key: Name
+          Value: CruddurIGW
 # VPC
 # IGW
 # Route Tables
