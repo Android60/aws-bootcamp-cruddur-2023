@@ -28,17 +28,100 @@ Resources:
       Tags:
       - Key: Name
         Value: CruddurRT
-  myRoute:
+  DefaultRoute:
     Type: AWS::EC2::Route
     DependsOn: AttachIGW
     Properties:
         RouteTableId: !Ref RouteTable
         DestinationCidrBlock: 0.0.0.0/0
         GatewayId: !Ref IGW
+  PubSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.0.0/24
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: "us-east-1a"
+      Tags:
+      - Key: Name
+        Value: CruddurSubnetPubA
+  PubSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: "us-east-1b"
+      Tags:
+      - Key: Name
+        Value: CruddurSubnetPubB
+  PubSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: "us-east-1c"
+      Tags:
+      - Key: Name
+        Value: CruddurSubnetPubC
+  PrivSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.3.0/24
+      AvailabilityZone: "us-east-1a"
+      Tags:
+      - Key: Name
+        Value: CruddurSubnetPrivA
+  PrivSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.4.0/24
+      AvailabilityZone: "us-east-1b"
+      Tags:
+      - Key: Name
+        Value: CruddurSubnetPrivB
+  PrivSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.5.0/24
+      AvailabilityZone: "us-east-1c"
+      Tags:
+      - Key: Name
+        Value: CruddurSubnetPrivC
+  RouteTableAssociationPubA:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PubSubnetA
+      RouteTableId: !Ref RouteTable
+  RouteTableAssociationPubB:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PubSubnetB
+      RouteTableId: !Ref RouteTable
+  RouteTableAssociationPubC:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PubSubnetC
+      RouteTableId: !Ref RouteTable
+  RouteTableAssociationPrivA:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PrivSubnetA
+      RouteTableId: !Ref RouteTable
+  RouteTableAssociationPrivB:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PrivSubnetB
+      RouteTableId: !Ref RouteTable
+  RouteTableAssociationPrivC:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PrivSubnetC
+      RouteTableId: !Ref RouteTable
 # VPC
 # IGW
 # Route Tables
-# Subnets
-  # A
-  # B
-  # C
