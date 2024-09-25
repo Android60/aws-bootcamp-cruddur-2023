@@ -16,6 +16,14 @@ Resources:
       Tags: 
         - Key: Name
           Value: CruddurIGW
+  AttachIGW:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId:
+        Ref: IGW
+      VpcId:
+        Ref: VPC
+
 # VPC
 # IGW
 # Route Tables
