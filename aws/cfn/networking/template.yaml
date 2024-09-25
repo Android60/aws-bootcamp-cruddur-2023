@@ -19,11 +19,15 @@ Resources:
   AttachIGW:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
-      InternetGatewayId:
-        Ref: IGW
-      VpcId:
-        Ref: VPC
-
+      InternetGatewayId: !Ref IGW
+      VpcId: !Ref VPC
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: CruddurRT
 # VPC
 # IGW
 # Route Tables
