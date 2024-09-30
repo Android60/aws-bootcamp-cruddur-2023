@@ -8,5 +8,19 @@ Resources:
     Type: 'AWS::ECS::Cluster'
     Properties:
       ClusterName: !Sub ${AWS::StackName}-Cluster
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Subnets:
+      - !Ref SubnetA
+      - !Ref SubnetB
+      SecurityGroups:
+      - !Ref LoadBalancerSecurityGroup
+      Scheme: 'internet-facing'
+
 # Outputs:
 # Metadata:
