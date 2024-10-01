@@ -74,7 +74,9 @@ Resources:
     Properties:
       GroupName: !Sub ${AWS::StackName}-ALB-SG
       GroupDescription: Allow http and https
-      VpcId: !Ref myVPC
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
