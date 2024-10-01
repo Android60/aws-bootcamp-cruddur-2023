@@ -99,6 +99,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckEnabled: true
+      HealthCheckPath: /api/health
       Name: !Sub ${AWS::StackName}-backend-tg
       TargetType: ip
       Port: !Ref BackendPort
