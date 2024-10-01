@@ -2,14 +2,18 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: |
   Setup ECS cluster
 Parameters:
-  CertificateArn:
+  NetworkingStack:
     Type: String
+    Default: cruddur-network
   FrontendPort:
     Type: Number
     Default: 3000
   BackendPort:
     Type: Number
     Default: 4567
+  CertificateArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cruddur/certificateArn
 # Mappings:
 Resources:
   ECSCluster:
@@ -22,21 +26,24 @@ Resources:
   ALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
+      Name: !Sub "${AWS::StackName}-ALB"
       Type: application
       IpAddressType: ipv4
       Subnets:
-      - !Ref SubnetA
-      - !Ref SubnetB
+        Fn::Split:
+          - ","
+          - Fn::ImportValue:
+              !Sub "${NetworkingStack}PublicSubnetIds"
       SecurityGroups:
-      - !Ref LoadBalancerSecurityGroup
+      - !Ref ALBSecurityGroup
       Scheme: 'internet-facing'
-      Certificates:
-        - CertificateArn: !Ref CertificateArn
   Listener443:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       LoadBalancerArn: !Ref ALB
       Port: 443
+      Certificates:
+        - CertificateArn: !Ref CertificateArn
       Protocol: HTTPS
       DefaultActions:
         - Type: forward
@@ -64,9 +71,8 @@ Resources:
           TargetGroupArn: !Ref BackendTargetGroup
       Conditions:
         - Field: host-header
-          HttpHeaderConfig:
-            Values:
-              - api.cruddur.myhomelab.xyz
+          Values:
+            - api.cruddur.myhomelab.xyz
       ListenerArn: !Ref Listener443
       Priority: 1
   ALBSecurityGroup:
@@ -95,6 +101,10 @@ Resources:
       Name: !Sub ${AWS::StackName}-frontend-tg
       TargetType: ip
       Port: !Ref FrontendPort
+      Protocol: HTTP
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
   BackendTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -103,6 +113,9 @@ Resources:
       Name: !Sub ${AWS::StackName}-backend-tg
       TargetType: ip
       Port: !Ref BackendPort
-
+      Protocol: HTTP
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
 # Outputs:
 # Metadata:
