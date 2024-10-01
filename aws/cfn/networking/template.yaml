@@ -151,3 +151,11 @@ Outputs:
     Value: !Ref VPC
     Export:
       Name: !Sub "${AWS::StackName}VpcId"
+  PubSubnetsId:
+    Value: !Join 
+      - ","
+      - - !Ref PubSubnetA
+        - !Ref PubSubnetB
+        - !Ref PubSubnetC
+    Export:
+      Name: !Sub "${AWS::StackName}PublicSubnetIds"
