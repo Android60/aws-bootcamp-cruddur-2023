@@ -146,6 +146,8 @@ Resources:
     Properties:
       SubnetId: !Ref PrivSubnetC
       RouteTableId: !Ref RouteTable
-# VPC
-# IGW
-# Route Tables
+Outputs:
+  VpcId:
+    Value: !Ref VPC
+    Export:
+      Name: !Sub "${AWS::StackName}VpcId"
