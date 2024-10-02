@@ -1,6 +1,23 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: |
-  Setup ECS cluster
+  - ECS Cluster
+    - container insights
+  - Application Load Balancer
+    - IP v4
+    - internet-facing
+  - ALB security group
+    - allow ingress 80/tcp and 443/tcp
+  - HTTP listener
+    - redirect to HTTPS
+  - HTTPS listener
+    - attached certificate from ACM
+    - forward api.cruddur.myhomelab.xyz to backend target group
+    - forward cruddur.myhomelab.xyz to frontend target group
+  - Backend target group
+    - use port 4567
+    - use custom path "/api/health" for health check
+  - Frontend target group
+    - use port 3000
 Parameters:
   NetworkingStack:
     Type: String
