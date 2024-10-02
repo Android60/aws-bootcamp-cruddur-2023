@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  NetworkingStack:
+    Type: String
+    Default: cruddur-network
+  ClusterStack:
+    Type: String
+    Default: cruddur-cluster
+Resources:
+  #BackendSecurityGroup
+  #FrontendSecurityGroup
+  #BackendService
+  #FrontendService
+  #BackendTaskDefinition
+  #FrontendTaskDefinition
+  #ExecutionRole
+  #TaskRole
