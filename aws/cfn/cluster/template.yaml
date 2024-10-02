@@ -134,5 +134,9 @@ Resources:
       VpcId:
         Fn::ImportValue:
           !Sub ${NetworkingStack}VpcId
-# Outputs:
+Outputs:
+  VpcId:
+    Value: !Ref VPC
+    Export:
+      Name: !Sub "${AWS::StackName}ALBSecurityGroupId"
 # Metadata:
