@@ -39,14 +39,12 @@ Resources:
             Fn::ImportValue:
               !Sub ${ClusterStack}ALBSecurityGroupId
           Description: !Sub ${AWS::StackName}-frontend-service-sg
-  #BackendService
-  #FrontendService
   BackendTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: backend-flask
-      ExecutionRoleArn: arn:aws:iam::559077574210:role/CruddurServiceExecutionRole
-      TaskRoleArn: arn:aws:iam::559077574210:role/CruddurTaskRole
+      ExecutionRoleArn: !GetAtt CruddurServiceExecutionRole.Arn
+      TaskRoleArn: !GetAtt CruddurTaskRole.Arn
       NetworkMode: awsvpc
       Cpu: '256'
       Memory: '512'
@@ -113,8 +111,8 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: frontend-react-js
-      ExecutionRoleArn: arn:aws:iam::559077574210:role/CruddurServiceExecutionRole
-      TaskRoleArn: arn:aws:iam::559077574210:role/CruddurTaskRole
+      ExecutionRoleArn: !GetAtt CruddurServiceExecutionRole.Arn
+      TaskRoleArn: !GetAtt CruddurTaskRole.Arn
       NetworkMode: awsvpc
       Cpu: '256'
       Memory: '512'
@@ -143,6 +141,8 @@ Resources:
               awslogs-group: /cruddur/fargate-cluster
               awslogs-region: us-east-1
               awslogs-stream-prefix: frontend-react-js
+  #BackendService
+  #FrontendService
   CruddurServiceExecutionRole:
     Type: AWS::IAM::Role
     Properties:
