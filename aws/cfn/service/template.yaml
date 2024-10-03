@@ -172,7 +172,7 @@ Resources:
       TaskDefinition: !Ref BackendTaskDefinition
       ServiceConnectConfiguration:
         Enabled: true
-        Namespace: !Sub ${AWS::StackName}-ns
+        Namespace: cruddur
         Services:
           - PortName: backend-flask
             DiscoveryName: backend-flask
