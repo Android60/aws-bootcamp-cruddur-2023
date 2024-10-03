@@ -169,10 +169,10 @@ Resources:
                   !Sub "${NetworkingStack}PublicSubnetIds"
       PropagateTags: SERVICE
       ServiceName: backend-flask
-      TaskDefinition: backend-flask
+      TaskDefinition: !Ref BackendTaskDefinition
       ServiceConnectConfiguration:
         Enabled: true
-        Namespace: cruddur
+        Namespace: !Sub ${AWS::StackName}-ns
         Services:
           - PortName: backend-flask
             DiscoveryName: backend-flask
