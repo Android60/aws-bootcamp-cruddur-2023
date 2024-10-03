@@ -139,4 +139,16 @@ Outputs:
     Value: !Ref ALBSecurityGroup
     Export:
       Name: !Sub "${AWS::StackName}ALBSecurityGroupId"
+  ECSCluster:
+    Value: !Ref ECSCluster
+    Export:
+      Name: !Sub "${AWS::StackName}ECSCluster"
+  BackendTargetGroup:
+    Value: !Ref BackendTargetGroup
+    Export:
+      Name: !Sub "${AWS::StackName}BackendTargetGroup"
+  FrontendTargetGroup:
+    Value: !Ref FrontendTargetGroup
+    Export:
+      Name: !Sub "${AWS::StackName}FrontendTargetGroup"
 # Metadata:
