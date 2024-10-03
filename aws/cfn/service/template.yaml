@@ -141,7 +141,43 @@ Resources:
               awslogs-group: /cruddur/fargate-cluster
               awslogs-region: us-east-1
               awslogs-stream-prefix: frontend-react-js
-  #BackendService
+  BackendService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Fn::ImportValue:
+          !Sub ${ClusterStack}ECSCluster
+      LaunchType: FARGATE
+      DesiredCount: 1
+      EnableECSManagedTags: true
+      EnableExecuteCommand: true
+      LoadBalancers:
+        - TargetGroupArn: 
+            Fn::ImportValue:
+              !Sub ${ClusterStack}BackendTargetGroup
+          ContainerName: backend-flask
+          ContainerPort: 4567
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref BackendSecurityGroup
+          Subnets:
+            Fn::Split:
+              - ","
+              - Fn::ImportValue:
+                  !Sub "${NetworkingStack}PublicSubnetIds"
+      PropagateTags: SERVICE
+      ServiceName: backend-flask
+      TaskDefinition: backend-flask
+      ServiceConnectConfiguration:
+        Enabled: true
+        Namespace: cruddur
+        Services:
+          - PortName: backend-flask
+            DiscoveryName: backend-flask
+            ClientAliases:
+              - Port: 4567
   #FrontendService
   CruddurServiceExecutionRole:
     Type: AWS::IAM::Role
