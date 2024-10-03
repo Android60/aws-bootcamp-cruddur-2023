@@ -10,8 +10,8 @@ Resources:
   BackendSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub ${AWS::StackName}-ALB-SG
-      GroupDescription: Allow
+      GroupName: !Sub ${AWS::StackName}-BackendService-SG
+      GroupDescription: Allow 4567/tcp from ALB
       VpcId:
         Fn::ImportValue:
           !Sub ${NetworkingStack}VpcId
@@ -19,7 +19,6 @@ Resources:
         - IpProtocol: tcp
           FromPort: 4567
           ToPort: 4567
-          CidrIp: 0.0.0.0/0
           SourceSecurityGroupId:
             Fn::ImportValue:
               !Sub ${ClusterStack}ALBSecurityGroupId
@@ -27,8 +26,8 @@ Resources:
   FrontendSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub ${AWS::StackName}-ALB-SG
-      GroupDescription: Allow http and https
+      GroupName: !Sub ${AWS::StackName}-FrontendService-SG
+      GroupDescription: Allow 3000/tcp from ALB
       VpcId:
         Fn::ImportValue:
           !Sub ${NetworkingStack}VpcId
@@ -36,14 +35,148 @@ Resources:
         - IpProtocol: tcp
           FromPort: 3000
           ToPort: 3000
-          CidrIp: 0.0.0.0/0
           SourceSecurityGroupId:
             Fn::ImportValue:
               !Sub ${ClusterStack}ALBSecurityGroupId
           Description: !Sub ${AWS::StackName}-frontend-service-sg
   #BackendService
   #FrontendService
-  #BackendTaskDefinition
+  BackendTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: backend-flask
+      ExecutionRoleArn: arn:aws:iam::559077574210:role/CruddurServiceExecutionRole
+      TaskRoleArn: arn:aws:iam::559077574210:role/CruddurTaskRole
+      NetworkMode: awsvpc
+      Cpu: '256'
+      Memory: '512'
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: xray
+          Image: public.ecr.aws/xray/aws-xray-daemon
+          Essential: true
+          User: '1337'
+          PortMappings:
+            - Name: xray
+              ContainerPort: 2000
+              Protocol: udp
+        - Name: backend-flask
+          Image: 559077574210.dkr.ecr.us-east-1.amazonaws.com/backend-flask
+          Essential: true
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - python /backend-flask/bin/flask/health-check
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 60
+          PortMappings:
+            - Name: backend-flask
+              ContainerPort: 4567
+              Protocol: tcp
+              AppProtocol: http
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /cruddur/fargate-cluster
+              awslogs-region: us-east-1
+              awslogs-stream-prefix: backend-flask
+          Environment:
+            - Name: OTEL_SERVICE_NAME
+              Value: backend-flask
+            - Name: OTEL_EXPORTER_OTLP_ENDPOINT
+              Value: https://api.honeycomb.io
+            - Name: AWS_COGNITO_USER_POOL_ID
+              Value: us-east-1_7OaMVeDno
+            - Name: AWS_COGNITO_USER_POOL_CLIENT_ID
+              Value: 7n7jv66d4t2ft4ujt4pgik16ii
+            - Name: FRONTEND_URL
+              Value: https://cruddur.myhomelab.xyz
+            - Name: BACKEND_URL
+              Value: https://api.cruddur.myhomelab.xyz
+            - Name: AWS_DEFAULT_REGION
+              Value: us-east-1
+          Secrets:
+            - Name: AWS_ACCESS_KEY_ID
+              ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/AWS_ACCESS_KEY_ID
+            - Name: AWS_SECRET_ACCESS_KEY
+              ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/AWS_SECRET_ACCESS_KEY
+            - Name: CONNECTION_URL
+              ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/CONNECTION_URL
+            - Name: ROLLBAR_ACCESS_TOKEN
+              ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/ROLLBAR_ACCESS_TOKEN
+            - Name: OTEL_EXPORTER_OTLP_HEADERS
+              ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/OTEL_EXPORTER_OTLP_HEADERS
+  CruddurServiceExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-ServiceExecutionRole
+      AssumeRolePolicyDocument: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "ecs-tasks.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess
+      Policies: [
+        {
+          "PolicyName": "CruddurServiceExecutionPolicy",
+          "PolicyDocument": 
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                  {
+                      "Sid": "VisualEditor0",
+                      "Effect": "Allow",
+                      "Action": [
+                          "logs:DescribeLogGroups",
+                          "ecr:GetAuthorizationToken"
+                      ],
+                      "Resource": "*"
+                  },
+                  {
+                      "Sid": "VisualEditor1",
+                      "Effect": "Allow",
+                      "Action": [
+                          "logs:CreateLogStream",
+                          "ssm:GetParameters",
+                          "logs:CreateLogGroup",
+                          "logs:PutLogEvents"
+                      ],
+                      "Resource": [
+                          "arn:aws:logs:us-east-1:559077574210:log-group:/cruddur/fargate-cluster:log-stream:*",
+                          "arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/*"
+                      ]
+                  },
+                  {
+                      "Sid": "VisualEditor2",
+                      "Effect": "Allow",
+                      "Action": [
+                          "logs:CreateLogStream",
+                          "logs:DeleteLogGroup",
+                          "logs:GetLogEvents",
+                          "logs:CreateLogGroup",
+                          "logs:DeleteLogStream",
+                          "logs:PutLogEvents"
+                      ],
+                      "Resource": "arn:aws:logs:us-east-1:559077574210:log-group:/ecs/backend-flask:log-stream:*"
+                  }
+              ]
+            }
+        }
+      ]
+
+
   #FrontendTaskDefinition
   #ExecutionRole
   #TaskRole
