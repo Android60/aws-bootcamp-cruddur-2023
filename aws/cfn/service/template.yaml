@@ -109,6 +109,40 @@ Resources:
               ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/ROLLBAR_ACCESS_TOKEN
             - Name: OTEL_EXPORTER_OTLP_HEADERS
               ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/OTEL_EXPORTER_OTLP_HEADERS
+  FrontendTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: frontend-react-js
+      ExecutionRoleArn: arn:aws:iam::559077574210:role/CruddurServiceExecutionRole
+      TaskRoleArn: arn:aws:iam::559077574210:role/CruddurTaskRole
+      NetworkMode: awsvpc
+      Cpu: '256'
+      Memory: '512'
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: frontend-react-js
+          Image: 559077574210.dkr.ecr.us-east-1.amazonaws.com/frontend-react-js
+          Essential: true
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - curl -f http://localhost:3000 || exit 1
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 60
+          PortMappings:
+            - Name: frontend-react-js
+              ContainerPort: 3000
+              Protocol: tcp
+              AppProtocol: http
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /cruddur/fargate-cluster
+              awslogs-region: us-east-1
+              awslogs-stream-prefix: frontend-react-js
   CruddurServiceExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -175,8 +209,46 @@ Resources:
             }
         }
       ]
+  CruddurTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-TaskRole
+      AssumeRolePolicyDocument: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "ecs-tasks.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+        - arn:aws:iam::aws:policy/CloudWatchFullAccess
+      Policies: [
+        {
+          "PolicyName": "SSMAccessPolicy",
+          "PolicyDocument":
+            {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Action": [
+                            "ssmmessages:CreateControlChannel",
+                            "ssmmessages:CreateDataChannel",
+                            "ssmmessages:OpenControlChannel",
+                            "ssmmessages:OpenDataChannel"
+                        ],
+                        "Effect": "Allow",
+                        "Resource": "*"
+                    }
+                ]
+            }
+        }
+      ]
 
 
-  #FrontendTaskDefinition
-  #ExecutionRole
-  #TaskRole
