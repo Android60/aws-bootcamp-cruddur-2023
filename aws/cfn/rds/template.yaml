@@ -8,7 +8,7 @@ Parameters:
     Default: cruddur-cluster
   DBName:
     Type: String
-    Default: instance
+    Default: cruddur
   DBUsername:
     Type: String
     Default: cruddur_root
@@ -22,8 +22,8 @@ Resources:
   DBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: Subnet group for !Sub ${AWS::StackName}-!Ref DBName
-      DBSubnetGroupName: !Sub ${AWS::StackName}-!Ref DBName-SubnetGroup
+      DBSubnetGroupDescription: !Sub "Subnet group for ${AWS::StackName}-${DBName}"
+      DBSubnetGroupName: !Sub "${AWS::StackName}-${DBName}-SubnetGroup"
       SubnetIds: 
         Fn::Split:
           - ","
@@ -33,15 +33,14 @@ Resources:
     Type: 'AWS::RDS::DBInstance'
     DeletionPolicy: Delete # Remove for production
     Properties:
-      DBInstanceIdentifier: !Ref DBInstanceID
-      DBName: !Sub ${AWS::StackName}-!Ref DBName
+      DBName: !Ref DBName
       BackupRetentionPeriod: 0 # Remove for production
       DBInstanceClass: db.t3.micro
       AllocatedStorage: !Ref DBStorageGB
       Engine: postgres
       EngineVersion: !Ref DBEngineVersion
       MasterUsername: !Ref DBUsername
-      MasterUserPassword: '{{resolve:ssm-secure:/cruddur/rds/master_user_password:2}}'
+      MasterUserPassword: '{{resolve:ssm:/cruddur/rds/master_user_password:1}}'
       DBSubnetGroupName: !Ref DBSubnetGroup
       VPCSecurityGroups:
         - !Ref DBSecurityGroup
@@ -61,3 +60,10 @@ Resources:
               Fn::ImportValue:
                 !Sub ${ClusterStack}BackendSecurityGroupId
           Description: Postgres
+  DBConnectionUrl:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /cruddur/rds/CONNECTION_URL
+      Type: String
+      Value: !Sub "postgresql://${DBUsername}:{{resolve:ssm:/cruddur/rds/master_user_password:1}}@${DB.Endpoint.Address}:${DB.Endpoint.Port}/${DBName}"
+      Description: DB Connection URL
