@@ -31,9 +31,11 @@ Resources:
               !Sub "${NetworkingStack}PublicSubnetIds"
   DB:
     Type: 'AWS::RDS::DBInstance'
+    DeletionPolicy: Delete # Remove for production
     Properties:
       DBInstanceIdentifier: !Ref DBInstanceID
       DBName: !Sub ${AWS::StackName}-!Ref DBName
+      BackupRetentionPeriod: 0 # Remove for production
       DBInstanceClass: db.t3.micro
       AllocatedStorage: !Ref DBStorageGB
       Engine: postgres
@@ -58,4 +60,4 @@ Resources:
           SourceSecurityGroupId:
               Fn::ImportValue:
                 !Sub ${ClusterStack}BackendSecurityGroupId
-          Description: HTTP
+          Description: Postgres
