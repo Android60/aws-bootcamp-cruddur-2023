@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  NetworkingStack:
+    Type: String
+    Default: cruddur-network
+  ClusterStack:
+    Type: String
+    Default: cruddur-cluster
+  DBName:
+    Type: String
+    Default: instance
+  DBUsername:
+    Type: String
+    Default: cruddur_root
+  DBStorageGB:
+    Type: Number
+    Default: 20
+  DBEngineVersion:
+    Type: String
+    Default: 14.12
+Resources:
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for !Sub ${AWS::StackName}-!Ref DBName
+      DBSubnetGroupName: !Sub ${AWS::StackName}-!Ref DBName-SubnetGroup
+      SubnetIds: 
+        Fn::Split:
+          - ","
+          - Fn::ImportValue:
+              !Sub "${NetworkingStack}PublicSubnetIds"
+  DB:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceID
+      DBName: !Sub ${AWS::StackName}-!Ref DBName
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: !Ref DBStorageGB
+      Engine: postgres
+      EngineVersion: !Ref DBEngineVersion
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: '{{resolve:ssm-secure:/cruddur/rds/master_user_password:2}}'
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${AWS::StackName}-DB-SG
+      GroupDescription: Allow 5432/tcp from backend SG
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId:
+              Fn::ImportValue:
+                !Sub ${ClusterStack}BackendSecurityGroupId
+          Description: HTTP
