@@ -7,38 +7,6 @@ Parameters:
     Type: String
     Default: cruddur-cluster
 Resources:
-  BackendSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Sub ${AWS::StackName}-BackendService-SG
-      GroupDescription: Allow 4567/tcp from ALB
-      VpcId:
-        Fn::ImportValue:
-          !Sub ${NetworkingStack}VpcId
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 4567
-          ToPort: 4567
-          SourceSecurityGroupId:
-            Fn::ImportValue:
-              !Sub ${ClusterStack}ALBSecurityGroupId
-          Description: !Sub ${AWS::StackName}-backend-service-sg
-  FrontendSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Sub ${AWS::StackName}-FrontendService-SG
-      GroupDescription: Allow 3000/tcp from ALB
-      VpcId:
-        Fn::ImportValue:
-          !Sub ${NetworkingStack}VpcId
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 3000
-          ToPort: 3000
-          SourceSecurityGroupId:
-            Fn::ImportValue:
-              !Sub ${ClusterStack}ALBSecurityGroupId
-          Description: !Sub ${AWS::StackName}-frontend-service-sg
   BackendTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -161,7 +129,8 @@ Resources:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
           SecurityGroups:
-            - !Ref BackendSecurityGroup
+            Fn::ImportValue:
+                !Sub ${ClusterStack}BackendSecurityGroupId
           Subnets:
             Fn::Split:
               - ","
@@ -198,7 +167,8 @@ Resources:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
           SecurityGroups:
-            - !Ref FrontendSecurityGroup
+            Fn::ImportValue:
+                !Sub ${ClusterStack}FrontendSecurityGroupId
           Subnets:
             Fn::Split:
               - ","

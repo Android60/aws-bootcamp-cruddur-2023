@@ -134,11 +134,47 @@ Resources:
       VpcId:
         Fn::ImportValue:
           !Sub ${NetworkingStack}VpcId
+  BackendSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${AWS::StackName}-BackendService-SG
+      GroupDescription: Allow 4567/tcp from ALB
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 4567
+          ToPort: 4567
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+          Description: !Sub ${AWS::StackName}-backend-service-sg
+  FrontendSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${AWS::StackName}-FrontendService-SG
+      GroupDescription: Allow 3000/tcp from ALB
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+          Description: !Sub ${AWS::StackName}-frontend-service-sg
 Outputs:
   ALBSecurityGroupId:
     Value: !Ref ALBSecurityGroup
     Export:
       Name: !Sub "${AWS::StackName}ALBSecurityGroupId"
+  BackendSecurityGroupId:
+    Value: !Ref BackendSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}BackendSecurityGroupId"
+  FrontendSecurityGroupId:
+    Value: !Ref FrontendSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}FrontendSecurityGroupId"
   ECSCluster:
     Value: !Ref ECSCluster
     Export:
