@@ -6,6 +6,9 @@ Parameters:
   ClusterStack:
     Type: String
     Default: cruddur-cluster
+  RDSStack:
+    Type: String
+    Default: cruddur-rds
 Resources:
   BackendTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -70,7 +73,9 @@ Resources:
             - Name: AWS_SECRET_ACCESS_KEY
               ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/AWS_SECRET_ACCESS_KEY
             - Name: CONNECTION_URL
-              ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/CONNECTION_URL
+              ValueFrom:
+                Fn::ImportValue:
+                  !Sub ${RDSStack}DBConnectionUrlArn
             - Name: ROLLBAR_ACCESS_TOKEN
               ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/ROLLBAR_ACCESS_TOKEN
             - Name: OTEL_EXPORTER_OTLP_HEADERS
