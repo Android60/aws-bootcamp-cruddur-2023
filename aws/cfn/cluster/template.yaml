@@ -31,6 +31,15 @@ Parameters:
   CertificateArn:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /cruddur/certificateArn
+  FrontendDomain:
+    Type: String
+    Default: cruddur.myhomelab.xyz
+  BackendDomain:
+    Type: String
+    Default: api.cruddur.myhomelab.xyz
+  HostedZoneID:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cruddur/route53/zoneID
 # Mappings:
 Resources:
   ECSCluster:
@@ -162,6 +171,26 @@ Resources:
           ToPort: 3000
           SourceSecurityGroupId: !Ref ALBSecurityGroup
           Description: !Sub ${AWS::StackName}-frontend-service-sg
+  FrontendRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId : !Ref HostedZoneID
+      Name: !Ref FrontendDomain
+      AliasTarget: 
+        DNSName: !GetAtt ALB.DNSName
+        EvaluateTargetHealth: true
+        HostedZoneId: !GetAtt ALB.CanonicalHostedZoneID
+      Type: A
+  BackendRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId : !Ref HostedZoneID
+      Name: !Ref BackendDomain
+      AliasTarget: 
+        DNSName: !GetAtt ALB.DNSName
+        EvaluateTargetHealth: true
+        HostedZoneId: !GetAtt ALB.CanonicalHostedZoneID
+      Type: A
 Outputs:
   ALBSecurityGroupId:
     Value: !Ref ALBSecurityGroup
