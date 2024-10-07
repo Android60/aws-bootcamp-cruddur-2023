@@ -63,7 +63,12 @@ Resources:
   DBConnectionUrl:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /cruddur/rds/CONNECTION_URL
+      Name: /cruddur/backend-flask/CONNECTION_URL
       Type: String
       Value: !Sub "postgresql://${DBUsername}:{{resolve:ssm:/cruddur/rds/master_user_password:1}}@${DB.Endpoint.Address}:${DB.Endpoint.Port}/${DBName}"
       Description: DB Connection URL
+Outputs:
+  DBConnectionUrlArn:
+    Value: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${DBConnectionUrl}
+    Export:
+      Name: !Sub "${AWS::StackName}DBConnectionUrlArn"
