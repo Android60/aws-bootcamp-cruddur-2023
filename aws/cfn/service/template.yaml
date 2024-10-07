@@ -129,7 +129,7 @@ Resources:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
           SecurityGroups:
-            Fn::ImportValue:
+            - Fn::ImportValue:
                 !Sub ${ClusterStack}BackendSecurityGroupId
           Subnets:
             Fn::Split:
@@ -167,8 +167,8 @@ Resources:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
           SecurityGroups:
-            Fn::ImportValue:
-                !Sub ${ClusterStack}FrontendSecurityGroupId
+            - Fn::ImportValue:
+                !Sub ${ClusterStack}BackendSecurityGroupId
           Subnets:
             Fn::Split:
               - ","
