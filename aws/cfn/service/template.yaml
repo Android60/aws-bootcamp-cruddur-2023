@@ -173,7 +173,7 @@ Resources:
           AssignPublicIp: ENABLED
           SecurityGroups:
             - Fn::ImportValue:
-                !Sub ${ClusterStack}BackendSecurityGroupId
+                !Sub ${ClusterStack}FrontendSecurityGroupId
           Subnets:
             Fn::Split:
               - ","
