@@ -1,0 +1,12 @@
+#!/bin/bash
+CONFIG_PATH="config.toml"
+ARTIFACT_BUCKET="cfn-artifacts.cruddur.myhomelab.xyz"
+TEMPLATE_PATH=".aws-sam/build/template.yaml"
+OUTPUT_TEMPLATE_PATH=".aws-sam/build/packaged.yaml"
+
+sam package \
+  --s3-bucket $ARTIFACT_BUCKET \
+  --config-file $CONFIG_PATH \
+  --output-template-file $OUTPUT_TEMPLATE_PATH \
+  --template-file $TEMPLATE_PATH \
+  --s3-prefix "ddb"
