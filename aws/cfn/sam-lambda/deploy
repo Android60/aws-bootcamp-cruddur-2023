@@ -6,5 +6,4 @@ sam deploy \
   --template-file $PACKAGED_TEMPLATE_PATH  \
   --stack-name "cruddur-dynamodb" \
   --tags group=cruddur-dynamodb \
-  --no-execute-changeset \
   --capabilities "CAPABILITY_NAMED_IAM"
