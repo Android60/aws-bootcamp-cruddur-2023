@@ -17,6 +17,10 @@ echo "Deleting cruddur-network"
 aws cloudformation delete-stack --stack-name cruddur-network
 aws cloudformation wait stack-delete-complete --stack-name cruddur-network
 
+echo "Deleting cruddur-dynamodb"
+aws cloudformation delete-stack --stack-name cruddur-dynamodb
+aws cloudformation wait stack-delete-complete --stack-name cruddur-dynamodb
+
 end=`date +%s`
 runtime=$((end-start))
 echo "Destroy duration: $runtime s"
