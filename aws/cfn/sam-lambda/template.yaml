@@ -57,7 +57,7 @@ Resources:
       PackageType: Zip
       Handler: lambda_handler
       Runtime: !Ref PythonRuntime
-      Role: !GetAtt ExecutionRole.Arn
+      Role: !GetAtt DdbStreamExecutionRole.Arn
       MemorySize: !Ref MemorySize
       Timeout: !Ref Timeout
       Events:
@@ -77,7 +77,7 @@ Resources:
     Properties:
       LogGroupName: !Ref LambdaLogGroup
       LogStreamName: !Sub "${AWS::StackName}-LambdaExecution"
-  ExecutionRole:
+  DdbStreamExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       RoleName: CruddurDdbStreamExecRole
