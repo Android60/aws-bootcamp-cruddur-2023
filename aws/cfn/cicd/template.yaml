@@ -1,0 +1,367 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  FullRepositoryId:
+    Type: String
+    Default: Android60/aws-bootcamp-cruddur-2023
+  BranchName:
+    Type: String
+    Default: prod
+  SourceActionName:
+    Type: String
+    Default: Source
+Resources:
+  CodeStarConnection:
+    Type: AWS::CodeStarConnections::Connection
+    Properties:
+      ConnectionName: GitHubConnection
+      ProviderType: GitHub
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-CodePipelineServiceRole
+      AssumeRolePolicyDocument: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "codepipeline.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+      Policies: [
+        {
+          "PolicyName": "CruddurServiceExecutionPolicy",
+          "PolicyDocument": 
+            {
+                "Statement": [
+                    {
+                        "Action": [
+                            "iam:PassRole"
+                        ],
+                        "Resource": "*",
+                        "Effect": "Allow",
+                        "Condition": {
+                            "StringEqualsIfExists": {
+                                "iam:PassedToService": [
+                                    "cloudformation.amazonaws.com",
+                                    "elasticbeanstalk.amazonaws.com",
+                                    "ec2.amazonaws.com",
+                                    "ecs-tasks.amazonaws.com"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "Action": [
+                            "codecommit:CancelUploadArchive",
+                            "codecommit:GetBranch",
+                            "codecommit:GetCommit",
+                            "codecommit:GetRepository",
+                            "codecommit:GetUploadArchiveStatus",
+                            "codecommit:UploadArchive"
+                        ],
+                        "Resource": "*",
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Action": [
+                            "codedeploy:CreateDeployment",
+                            "codedeploy:GetApplication",
+                            "codedeploy:GetApplicationRevision",
+                            "codedeploy:GetDeployment",
+                            "codedeploy:GetDeploymentConfig",
+                            "codedeploy:RegisterApplicationRevision"
+                        ],
+                        "Resource": "*",
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Action": [
+                            "codestar-connections:UseConnection"
+                        ],
+                        "Resource": "*",
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Action": [
+                            "elasticbeanstalk:*",
+                            "ec2:*",
+                            "elasticloadbalancing:*",
+                            "autoscaling:*",
+                            "cloudwatch:*",
+                            "s3:*",
+                            "sns:*",
+                            "cloudformation:*",
+                            "rds:*",
+                            "sqs:*",
+                            "ecs:*"
+                        ],
+                        "Resource": "*",
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Action": [
+                            "lambda:InvokeFunction",
+                            "lambda:ListFunctions"
+                        ],
+                        "Resource": "*",
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Action": [
+                            "opsworks:CreateDeployment",
+                            "opsworks:DescribeApps",
+                            "opsworks:DescribeCommands",
+                            "opsworks:DescribeDeployments",
+                            "opsworks:DescribeInstances",
+                            "opsworks:DescribeStacks",
+                            "opsworks:UpdateApp",
+                            "opsworks:UpdateStack"
+                        ],
+                        "Resource": "*",
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Action": [
+                            "cloudformation:CreateStack",
+                            "cloudformation:DeleteStack",
+                            "cloudformation:DescribeStacks",
+                            "cloudformation:UpdateStack",
+                            "cloudformation:CreateChangeSet",
+                            "cloudformation:DeleteChangeSet",
+                            "cloudformation:DescribeChangeSet",
+                            "cloudformation:ExecuteChangeSet",
+                            "cloudformation:SetStackPolicy",
+                            "cloudformation:ValidateTemplate"
+                        ],
+                        "Resource": "*",
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Action": [
+                            "codebuild:BatchGetBuilds",
+                            "codebuild:StartBuild",
+                            "codebuild:BatchGetBuildBatches",
+                            "codebuild:StartBuildBatch"
+                        ],
+                        "Resource": "*",
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Action": [
+                            "devicefarm:ListProjects",
+                            "devicefarm:ListDevicePools",
+                            "devicefarm:GetRun",
+                            "devicefarm:GetUpload",
+                            "devicefarm:CreateUpload",
+                            "devicefarm:ScheduleRun"
+                        ],
+                        "Resource": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Action": [
+                            "servicecatalog:ListProvisioningArtifacts",
+                            "servicecatalog:CreateProvisioningArtifact",
+                            "servicecatalog:DescribeProvisioningArtifact",
+                            "servicecatalog:DeleteProvisioningArtifact",
+                            "servicecatalog:UpdateProduct"
+                        ],
+                        "Resource": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Action": [
+                            "cloudformation:ValidateTemplate"
+                        ],
+                        "Resource": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Action": [
+                            "ecr:DescribeImages"
+                        ],
+                        "Resource": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Action": [
+                            "states:DescribeExecution",
+                            "states:DescribeStateMachine",
+                            "states:StartExecution"
+                        ],
+                        "Resource": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Action": [
+                            "appconfig:StartDeployment",
+                            "appconfig:StopDeployment",
+                            "appconfig:GetDeployment"
+                        ],
+                        "Resource": "*"
+                    }
+                ],
+                "Version": "2012-10-17"
+            }
+        }
+      ]
+  CodePipeline:
+    Type: 'AWS::CodePipeline::Pipeline'
+    Properties:
+      RoleArn: !GetAtt CodePipelineServiceRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: !Ref Source
+              InputArtifacts: []
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: '1'
+                Provider: CodeStarSourceConnection
+              OutputArtifacts:
+                - Name: SourceArtifact
+              Configuration:
+                BranchName: !Ref BranchName
+                ConnectionArn: >-
+                  !Ref CodeStarConnection
+                FullRepositoryId: !Ref FullRepositoryId
+                OutputArtifactFormat: "CODE_ZIP"
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: Build_and_push_image
+              InputArtifacts:
+                - Name: SourceArtifact
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              Configuration:
+                ProjectName: !Ref Build_Image
+              OutputArtifacts:
+                - Name: ImageDefinition
+              RunOrder: 1
+        - Name: Deploy
+          Actions:
+            - Name: Deploy
+              InputArtifacts:
+                - Name: ImageDefinition
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: ECS
+                Version: '1'
+              Configuration:
+                ClusterName: !Ref ClusterName
+                ServiceName: !Ref BackendServiceName
+              RunOrder: 1
+      Triggers:
+        - ProviderType: CodeStarSourceConnection
+          GitConfiguration:
+            Push:
+              - Branches:
+                  Includes:
+                    - prod
+            SourceActionName: !Ref SourceActionName
+      PipelineType: V2
+      ExecutionMode: QUEUED
+      # ArtifactStore:
+      #   Type: S3
+      #   Location: !Ref ArtifactStoreS3Location
+# CodeBuild
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-CodeBuildServiceRole
+      AssumeRolePolicyDocument: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "codebuild.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+      Policies: [
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Resource": [
+                        "arn:aws:logs:us-east-1:559077574210:log-group:/aws/codebuild/Build_image",
+                        "arn:aws:logs:us-east-1:559077574210:log-group:/aws/codebuild/Build_image:*"
+                    ],
+                    "Action": [
+                        "logs:CreateLogGroup",
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents"
+                    ]
+                },
+                {
+                    "Effect": "Allow",
+                    "Resource": [
+                        "arn:aws:s3:::codepipeline-us-east-1-*"
+                    ],
+                    "Action": [
+                        "s3:PutObject",
+                        "s3:GetObject",
+                        "s3:GetObjectVersion",
+                        "s3:GetBucketAcl",
+                        "s3:GetBucketLocation"
+                    ]
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "codebuild:CreateReportGroup",
+                        "codebuild:CreateReport",
+                        "codebuild:UpdateReport",
+                        "codebuild:BatchPutTestCases",
+                        "codebuild:BatchPutCodeCoverages"
+                    ],
+                    "Resource": [
+                        "arn:aws:codebuild:us-east-1:559077574210:report-group/Build_image-*"
+                    ]
+                }
+            ]
+        },
+        
+      ]
+  BackendCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}-Backend-BuildImage
+      Description: !Sub ${AWS::StackName} stack
+      ServiceRole: !GetAtt ServiceRole.Arn
+      Artifacts:
+        Type: no_artifacts
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/java:openjdk-8
+        EnvironmentVariables:
+        - Name: varName
+          Type: varType
+          Value: varValue
+      Source:
+        Location: codebuild-demo-test/0123ab9a371ebf0187b0fe5614fbb72c
+        Type: S3
+      TimeoutInMinutes: 10
+      Tags:
+        - Key: Key1
+          Value: Value1
+        - Key: Key2
+          Value: Value2
