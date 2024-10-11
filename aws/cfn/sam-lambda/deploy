@@ -4,7 +4,7 @@ CONFIG_PATH="config.toml"
 set -e # stop the execution of the script if it fails
 sam deploy \
   --template-file $PACKAGED_TEMPLATE_PATH  \
-  --stack-name "CrdDdb" \
-  --tags group=cruddur-ddb \
+  --stack-name "cruddur-dynamodb" \
+  --tags group=cruddur-dynamodb \
   --no-execute-changeset \
   --capabilities "CAPABILITY_NAMED_IAM"
