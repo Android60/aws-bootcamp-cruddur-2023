@@ -32,9 +32,9 @@ Parameters:
   CodeBuildComputeType:
     Type: String
     Default: BUILD_GENERAL1_SMALL
-  BuildSpec:
+  CodeBuildBackendBuildSpec:
     Type: String
-    Default: 'buildspec.yaml'
+    Default: "backend-flask/buildspec.yml"
 Resources:
   CodeStarConnection:
     Type: AWS::CodeStarConnections::Connection
@@ -255,8 +255,7 @@ Resources:
                 - Name: SourceArtifact
               Configuration:
                 BranchName: !Ref BranchName
-                ConnectionArn: >-
-                  !Ref CodeStarConnection
+                ConnectionArn: !Ref CodeStarConnection
                 FullRepositoryId: !Ref FullRepositoryId
                 OutputArtifactFormat: "CODE_ZIP"
               RunOrder: 1
@@ -324,9 +323,11 @@ Resources:
                 }
             ]
         }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilderECRContainerBuilds
       Policies: [
         {
-        "PolicyName": "CruddurServiceExecutionPolicy",
+        "PolicyName": "CodeBuildBasePolicy",
         "PolicyDocument": 
           {
               "Version": "2012-10-17",
@@ -346,7 +347,7 @@ Resources:
                   {
                       "Effect": "Allow",
                       "Resource": [
-                          {"Fn::Sub": "arn:aws:s3:::${ArtifactStoreS3Location}"}
+                          {"Fn::Sub": "arn:aws:s3:::${ArtifactStoreS3Location}/*"}
                       ],
                       "Action": [
                           "s3:PutObject",
@@ -375,7 +376,7 @@ Resources:
         PrivilegedMode: true
       Source:
         Type: CODEPIPELINE
-        BuildSpec: !Ref BuildSpec
+        BuildSpec: !Ref CodeBuildBackendBuildSpec
       TimeoutInMinutes: 10
       QueuedTimeoutInMinutes: 10
       LogsConfig:
