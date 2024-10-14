@@ -297,5 +297,12 @@ Resources:
             }
         }
       ]
-
-
+Outputs:
+  BackendServiceName:
+    Value: !GetAtt BackendService.Name
+    Export:
+      Name: !Sub "${AWS::StackName}BackendServiceName"
+  FrontendServiceName:
+    Value: !GetAtt FrontendService.Name
+    Export:
+      Name: !Sub "${AWS::StackName}FrontendServiceName"
