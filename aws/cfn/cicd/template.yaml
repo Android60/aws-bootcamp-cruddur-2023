@@ -1,5 +1,11 @@
 AWSTemplateFormatVersion: 2010-09-09
 Parameters:
+  ClusterStack:
+    Type: String
+    Default: cruddur-cluster
+  ServiceStack:
+    Type: String
+    Default: cruddur-services
   FullRepositoryId:
     Type: String
     Default: Android60/aws-bootcamp-cruddur-2023
@@ -9,6 +15,26 @@ Parameters:
   SourceActionName:
     Type: String
     Default: Source
+  ArtifactStoreS3Location:
+    Type: String
+    Default: cfn-artifacts.cruddur.myhomelab.xyz
+  CodeBuildBackendLogGroupPath:
+    Type: String
+    Description: "The log group path for CodeBuild"
+    Default: "/cruddur/codebuild/build-image"
+  CodeBuildBackendLogStreamName:
+    Type: String
+    Description: "The log group path for CodeBuild"
+    Default: "backend-flask"
+  CodeBuildImage:
+    Type: String
+    Default: aws/codebuild/amazonlinux2-x86_64-standard:4.0
+  CodeBuildComputeType:
+    Type: String
+    Default: BUILD_GENERAL1_SMALL
+  BuildSpec:
+    Type: String
+    Default: 'buildspec.yaml'
 Resources:
   CodeStarConnection:
     Type: AWS::CodeStarConnections::Connection
@@ -218,7 +244,7 @@ Resources:
       Stages:
         - Name: Source
           Actions:
-            - Name: !Ref Source
+            - Name: !Ref SourceActionName
               InputArtifacts: []
               ActionTypeId:
                 Category: Source
@@ -245,7 +271,7 @@ Resources:
                 Provider: CodeBuild
                 Version: '1'
               Configuration:
-                ProjectName: !Ref Build_Image
+                ProjectName: !Ref BackendCodeBuildProject
               OutputArtifacts:
                 - Name: ImageDefinition
               RunOrder: 1
@@ -260,8 +286,12 @@ Resources:
                 Provider: ECS
                 Version: '1'
               Configuration:
-                ClusterName: !Ref ClusterName
-                ServiceName: !Ref BackendServiceName
+                ClusterName:
+                  Fn::ImportValue:
+                    !Sub ${ClusterStack}ECSCluster
+                ServiceName:
+                  Fn::ImportValue:
+                    !Sub ${ServiceStack}BackendServiceName
               RunOrder: 1
       Triggers:
         - ProviderType: CodeStarSourceConnection
@@ -273,9 +303,9 @@ Resources:
             SourceActionName: !Ref SourceActionName
       PipelineType: V2
       ExecutionMode: QUEUED
-      # ArtifactStore:
-      #   Type: S3
-      #   Location: !Ref ArtifactStoreS3Location
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactStoreS3Location
 # CodeBuild
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
@@ -296,72 +326,60 @@ Resources:
         }
       Policies: [
         {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Resource": [
-                        "arn:aws:logs:us-east-1:559077574210:log-group:/aws/codebuild/Build_image",
-                        "arn:aws:logs:us-east-1:559077574210:log-group:/aws/codebuild/Build_image:*"
-                    ],
-                    "Action": [
-                        "logs:CreateLogGroup",
-                        "logs:CreateLogStream",
-                        "logs:PutLogEvents"
-                    ]
-                },
-                {
-                    "Effect": "Allow",
-                    "Resource": [
-                        "arn:aws:s3:::codepipeline-us-east-1-*"
-                    ],
-                    "Action": [
-                        "s3:PutObject",
-                        "s3:GetObject",
-                        "s3:GetObjectVersion",
-                        "s3:GetBucketAcl",
-                        "s3:GetBucketLocation"
-                    ]
-                },
-                {
-                    "Effect": "Allow",
-                    "Action": [
-                        "codebuild:CreateReportGroup",
-                        "codebuild:CreateReport",
-                        "codebuild:UpdateReport",
-                        "codebuild:BatchPutTestCases",
-                        "codebuild:BatchPutCodeCoverages"
-                    ],
-                    "Resource": [
-                        "arn:aws:codebuild:us-east-1:559077574210:report-group/Build_image-*"
-                    ]
-                }
-            ]
-        },
-        
+        "PolicyName": "CruddurServiceExecutionPolicy",
+        "PolicyDocument": 
+          {
+              "Version": "2012-10-17",
+              "Statement": [
+                  {
+                      "Effect": "Allow",
+                      "Resource": [
+                        {"Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${CodeBuildBackendLogGroupPath}*"},
+                        {"Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${CodeBuildBackendLogGroupPath}:*"}
+                      ],
+                      "Action": [
+                          "logs:CreateLogGroup",
+                          "logs:CreateLogStream",
+                          "logs:PutLogEvents"
+                      ]
+                  },
+                  {
+                      "Effect": "Allow",
+                      "Resource": [
+                          {"Fn::Sub": "arn:aws:s3:::${ArtifactStoreS3Location}"}
+                      ],
+                      "Action": [
+                          "s3:PutObject",
+                          "s3:GetObject",
+                          "s3:GetObjectVersion",
+                          "s3:GetBucketAcl",
+                          "s3:GetBucketLocation"
+                      ]
+                  }
+              ]
+          }
+        }
       ]
   BackendCodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
       Name: !Sub ${AWS::StackName}-Backend-BuildImage
       Description: !Sub ${AWS::StackName} stack
-      ServiceRole: !GetAtt ServiceRole.Arn
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Artifacts:
-        Type: no_artifacts
+        Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
-        ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/java:openjdk-8
-        EnvironmentVariables:
-        - Name: varName
-          Type: varType
-          Value: varValue
+        ComputeType: !Ref CodeBuildComputeType
+        Image: !Ref CodeBuildImage
+        PrivilegedMode: true
       Source:
-        Location: codebuild-demo-test/0123ab9a371ebf0187b0fe5614fbb72c
-        Type: S3
+        Type: CODEPIPELINE
+        BuildSpec: !Ref BuildSpec
       TimeoutInMinutes: 10
-      Tags:
-        - Key: Key1
-          Value: Value1
-        - Key: Key2
-          Value: Value2
+      QueuedTimeoutInMinutes: 10
+      LogsConfig:
+        CloudWatchLogs:
+          GroupName: !Ref CodeBuildBackendLogGroupPath
+          Status: ENABLED
+          StreamName: !Ref CodeBuildBackendLogStreamName
