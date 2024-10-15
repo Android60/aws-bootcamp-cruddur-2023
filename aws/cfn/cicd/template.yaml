@@ -6,10 +6,16 @@ Parameters:
   ServiceStack:
     Type: String
     Default: cruddur-services
-  FullRepositoryId:
+  BackendFullRepositoryId:
     Type: String
     Default: Android60/aws-bootcamp-cruddur-2023
-  BranchName:
+  BackendBranchName:
+    Type: String
+    Default: prod
+  FrontendFullRepositoryId:
+    Type: String
+    Default: Android60/aws-bootcamp-cruddur-2023
+  FrontendBranchName:
     Type: String
     Default: prod
   SourceActionName:
@@ -60,7 +66,7 @@ Resources:
         }
       Policies: [
         {
-          "PolicyName": "CruddurServiceExecutionPolicy",
+          "PolicyName": "CodePipelineServicePolicy",
           "PolicyDocument": 
             {
                 "Statement": [
@@ -237,7 +243,7 @@ Resources:
             }
         }
       ]
-  CodePipeline:
+  BackendCodePipeline:
     Type: 'AWS::CodePipeline::Pipeline'
     Properties:
       RoleArn: !GetAtt CodePipelineServiceRole.Arn
@@ -254,9 +260,9 @@ Resources:
               OutputArtifacts:
                 - Name: SourceArtifact
               Configuration:
-                BranchName: !Ref BranchName
+                BranchName: !Ref BackendBranchName
                 ConnectionArn: !Ref CodeStarConnection
-                FullRepositoryId: !Ref FullRepositoryId
+                FullRepositoryId: !Ref BackendFullRepositoryId
                 OutputArtifactFormat: "CODE_ZIP"
               RunOrder: 1
         - Name: Build
