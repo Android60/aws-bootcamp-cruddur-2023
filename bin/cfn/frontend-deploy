@@ -1,0 +1,7 @@
+#!/bin/bash
+
+ABS_PATH=$(readlink -f "$0")
+PROJECT_PATH="$(dirname "$(dirname "$(dirname "$ABS_PATH")")")"
+TEMPLATE_PATH=$PROJECT_PATH/aws/cfn/frontend/template.yaml
+cfn-lint "$TEMPLATE_PATH"
+aws cloudformation deploy --stack-name "cruddur-frontend" --template-file "$TEMPLATE_PATH" --no-execute-changeset --capabilities CAPABILITY_NAMED_IAM
