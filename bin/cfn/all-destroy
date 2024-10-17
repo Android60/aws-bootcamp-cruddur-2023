@@ -1,6 +1,10 @@
 #!/bin/bash
 
 start=`date +%s`
+echo "Deleting cruddur-frontend"
+aws cloudformation delete-stack --stack-name cruddur-frontend
+aws cloudformation wait stack-delete-complete --stack-name cruddur-frontend
+
 echo "Deleting cruddur-cicd"
 aws cloudformation delete-stack --stack-name cruddur-cicd
 aws cloudformation wait stack-delete-complete --stack-name cruddur-cicd
