@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Setup ECS cluster
+# Parameters:
+# Mappings:
+Resources:
+  ECSCluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: cruddur-supercluster
+# Outputs:
+# Metadata:

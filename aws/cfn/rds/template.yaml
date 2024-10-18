@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  NetworkingStack:
+    Type: String
+    Default: cruddur-network
+  ClusterStack:
+    Type: String
+    Default: cruddur-cluster
+  DBName:
+    Type: String
+    Default: cruddur
+  DBUsername:
+    Type: String
+    Default: cruddur_root
+  DBStorageGB:
+    Type: Number
+    Default: 20
+  DBEngineVersion:
+    Type: String
+    Default: 14.12
+Resources:
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Sub "Subnet group for ${AWS::StackName}-${DBName}"
+      DBSubnetGroupName: !Sub "${AWS::StackName}-${DBName}-SubnetGroup"
+      SubnetIds: 
+        Fn::Split:
+          - ","
+          - Fn::ImportValue:
+              !Sub "${NetworkingStack}PublicSubnetIds"
+  DB:
+    Type: 'AWS::RDS::DBInstance'
+    DeletionPolicy: Delete # Remove for production
+    Properties:
+      DBName: !Ref DBName
+      BackupRetentionPeriod: 0 # Remove for production
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: !Ref DBStorageGB
+      Engine: postgres
+      EngineVersion: !Ref DBEngineVersion
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: '{{resolve:ssm:/cruddur/rds/master_user_password:1}}'
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${AWS::StackName}-DB-SG
+      GroupDescription: Allow 5432/tcp from backend SG
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId:
+              Fn::ImportValue:
+                !Sub ${ClusterStack}BackendSecurityGroupId
+          Description: Postgres
+  DBConnectionUrl:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /cruddur/backend-flask/CONNECTION_URL
+      Type: String
+      Value: !Sub "postgresql://${DBUsername}:{{resolve:ssm:/cruddur/rds/master_user_password:1}}@${DB.Endpoint.Address}:${DB.Endpoint.Port}/${DBName}"
+      Description: DB Connection URL
+Outputs:
+  DBConnectionUrlArn:
+    Value: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${DBConnectionUrl}
+    Export:
+      Name: !Sub "${AWS::StackName}DBConnectionUrlArn"

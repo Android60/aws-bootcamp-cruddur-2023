@@ -1,0 +1,24 @@
+#!/bin/bash
+
+ABS_PATH=$(readlink -f "$0")
+PROJECT_PATH="$(dirname "$(dirname "$(dirname "$ABS_PATH")")")"
+NETWORKING_TEMPLATE_PATH=$PROJECT_PATH/aws/cfn/networking/template.yaml
+CLUSTER_TEMPLATE_PATH=$PROJECT_PATH/aws/cfn/cluster/template.yaml
+RDS_TEMPLATE_PATH=$PROJECT_PATH/aws/cfn/rds/template.yaml
+SERVICE_TEMPLATE_PATH=$PROJECT_PATH/aws/cfn/service/template.yaml
+DYNAMODB_DEPLOY_PATH=$PROJECT_PATH/bin/cfn/ddb-deploy
+cfn-lint "$TEMPLATE_PATH"
+start=`date +%s`
+echo "Deploying: cruddur-network stack"
+aws cloudformation deploy --stack-name "cruddur-network" --template-file "$NETWORKING_TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM
+echo "Deploying: cruddur-cluster stack"
+aws cloudformation deploy --stack-name "cruddur-cluster" --template-file "$CLUSTER_TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM
+echo "Deploying: cruddur-rds stack"
+aws cloudformation deploy --stack-name "cruddur-rds" --template-file "$RDS_TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM
+echo "Deploying: cruddur-services stack"
+aws cloudformation deploy --stack-name "cruddur-services" --template-file "$SERVICE_TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM
+echo "Deploying: cruddur-dynamodb stack"
+source $DYNAMODB_DEPLOY_PATH
+end=`date +%s`
+runtime=$((end-start))
+echo "Deployment duration: $runtime s"

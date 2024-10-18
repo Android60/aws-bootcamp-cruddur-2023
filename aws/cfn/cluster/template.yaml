@@ -1,0 +1,219 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  - ECS Cluster
+    - container insights
+  - Application Load Balancer
+    - IP v4
+    - internet-facing
+  - ALB security group
+    - allow ingress 80/tcp and 443/tcp
+  - HTTP listener
+    - redirect to HTTPS
+  - HTTPS listener
+    - attached certificate from ACM
+    - forward api.cruddur.myhomelab.xyz to backend target group
+    - forward cruddur.myhomelab.xyz to frontend target group
+  - Backend target group
+    - use port 4567
+    - use custom path "/api/health" for health check
+  - Frontend target group
+    - use port 3000
+Parameters:
+  NetworkingStack:
+    Type: String
+    Default: cruddur-network
+  FrontendPort:
+    Type: Number
+    Default: 3000
+  BackendPort:
+    Type: Number
+    Default: 4567
+  CertificateArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cruddur/certificateArn
+  FrontendDomain:
+    Type: String
+    Default: cruddur.myhomelab.xyz
+  BackendDomain:
+    Type: String
+    Default: api.cruddur.myhomelab.xyz
+  HostedZoneID:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cruddur/route53/zoneID
+# Mappings:
+Resources:
+  ECSCluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: !Sub ${AWS::StackName}-Cluster
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub "${AWS::StackName}-ALB"
+      Type: application
+      IpAddressType: ipv4
+      Subnets:
+        Fn::Split:
+          - ","
+          - Fn::ImportValue:
+              !Sub "${NetworkingStack}PublicSubnetIds"
+      SecurityGroups:
+      - !Ref ALBSecurityGroup
+      Scheme: 'internet-facing'
+  Listener443:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ALB
+      Port: 443
+      Certificates:
+        - CertificateArn: !Ref CertificateArn
+      Protocol: HTTPS
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref FrontendTargetGroup
+  Listener80:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ALB
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: redirect
+          RedirectConfig:
+            Protocol: "HTTPS"
+            Port: 443
+            Host: "#{host}"
+            Path: "/#{path}"
+            Query: "#{query}"
+            StatusCode: "HTTP_301"
+  ApiListenerRule:
+    Type: 'AWS::ElasticLoadBalancingV2::ListenerRule'
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref BackendTargetGroup
+      Conditions:
+        - Field: host-header
+          Values:
+            - api.cruddur.myhomelab.xyz
+      ListenerArn: !Ref Listener443
+      Priority: 1
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${AWS::StackName}-ALB-SG
+      GroupDescription: Allow http and https
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: HTTPS
+  FrontendTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      Name: !Sub ${AWS::StackName}-frontend-tg
+      TargetType: ip
+      Port: !Ref FrontendPort
+      Protocol: HTTP
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+  BackendTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckPath: /api/health
+      Name: !Sub ${AWS::StackName}-backend-tg
+      TargetType: ip
+      Port: !Ref BackendPort
+      Protocol: HTTP
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+  BackendSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${AWS::StackName}-BackendService-SG
+      GroupDescription: Allow 4567/tcp from ALB
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 4567
+          ToPort: 4567
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+          Description: !Sub ${AWS::StackName}-backend-service-sg
+  FrontendSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${AWS::StackName}-FrontendService-SG
+      GroupDescription: Allow 3000/tcp from ALB
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+          Description: !Sub ${AWS::StackName}-frontend-service-sg
+  FrontendRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId : !Ref HostedZoneID
+      Name: !Ref FrontendDomain
+      AliasTarget: 
+        DNSName: !GetAtt ALB.DNSName
+        EvaluateTargetHealth: true
+        HostedZoneId: !GetAtt ALB.CanonicalHostedZoneID
+      Type: A
+  BackendRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId : !Ref HostedZoneID
+      Name: !Ref BackendDomain
+      AliasTarget: 
+        DNSName: !GetAtt ALB.DNSName
+        EvaluateTargetHealth: true
+        HostedZoneId: !GetAtt ALB.CanonicalHostedZoneID
+      Type: A
+Outputs:
+  ALBSecurityGroupId:
+    Value: !Ref ALBSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}ALBSecurityGroupId"
+  BackendSecurityGroupId:
+    Value: !Ref BackendSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}BackendSecurityGroupId"
+  FrontendSecurityGroupId:
+    Value: !Ref FrontendSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}FrontendSecurityGroupId"
+  ECSCluster:
+    Value: !Ref ECSCluster
+    Export:
+      Name: !Sub "${AWS::StackName}ECSCluster"
+  BackendTargetGroup:
+    Value: !Ref BackendTargetGroup
+    Export:
+      Name: !Sub "${AWS::StackName}BackendTargetGroup"
+  FrontendTargetGroup:
+    Value: !Ref FrontendTargetGroup
+    Export:
+      Name: !Sub "${AWS::StackName}FrontendTargetGroup"
+# Metadata:

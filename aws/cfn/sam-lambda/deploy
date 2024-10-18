@@ -1,0 +1,9 @@
+#!/bin/bash
+PACKAGED_TEMPLATE_PATH=.aws-sam/build/packaged.yaml
+CONFIG_PATH="config.toml"
+set -e # stop the execution of the script if it fails
+sam deploy \
+  --template-file $PACKAGED_TEMPLATE_PATH  \
+  --stack-name "cruddur-dynamodb" \
+  --tags group=cruddur-dynamodb \
+  --capabilities "CAPABILITY_NAMED_IAM"

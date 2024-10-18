@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: 2010-09-09
+  DynamoDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - AttributeName: "message_group_uuid"
+          AttributeType: "S"
+        - AttributeName: "pk"
+          AttributeType: "S"
+        - AttributeName: "sk"
+          AttributeType: "S"
+      KeySchema: 
+        - AttributeName: "pk"
+          KeyType: "HASH"
+        - AttributeName: "sk"
+          KeyType: "RANGE"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      TableName: !Sub "${AWS::StackName}-messages"
+      BillingMode: "PROVISIONED"
+      DeletionProtectionEnabled: false # Only for tests, enable later
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+      GlobalSecondaryIndexes: 
+        - IndexName: "message-group-sk-index"
+          KeySchema: 
+            - AttributeName: "message_group_uuid"
+              KeyType: "HASH"
+            - AttributeName: "sk"
+              KeyType: "RANGE"
+          Projection: 
+            ProjectionType: "ALL"
+          ProvisionedThroughput: 
+            ReadCapacityUnits: "5"
+            WriteCapacityUnits: "5"
+  #ProcessDynamoDBStreamLambda

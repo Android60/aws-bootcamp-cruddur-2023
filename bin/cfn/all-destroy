@@ -1,0 +1,34 @@
+#!/bin/bash
+
+start=`date +%s`
+echo "Deleting cruddur-frontend"
+aws cloudformation delete-stack --stack-name cruddur-frontend
+aws cloudformation wait stack-delete-complete --stack-name cruddur-frontend
+
+echo "Deleting cruddur-cicd"
+aws cloudformation delete-stack --stack-name cruddur-cicd
+aws cloudformation wait stack-delete-complete --stack-name cruddur-cicd
+
+echo "Deleting cruddur-services"
+aws cloudformation delete-stack --stack-name cruddur-services
+aws cloudformation wait stack-delete-complete --stack-name cruddur-services
+
+echo "Deleting cruddur-rds"
+aws cloudformation delete-stack --stack-name cruddur-rds
+aws cloudformation wait stack-delete-complete --stack-name cruddur-rds
+
+echo "Deleting cruddur-cluster"
+aws cloudformation delete-stack --stack-name cruddur-cluster
+aws cloudformation wait stack-delete-complete --stack-name cruddur-cluster
+
+echo "Deleting cruddur-network"
+aws cloudformation delete-stack --stack-name cruddur-network
+aws cloudformation wait stack-delete-complete --stack-name cruddur-network
+
+echo "Deleting cruddur-dynamodb"
+aws cloudformation delete-stack --stack-name cruddur-dynamodb
+aws cloudformation wait stack-delete-complete --stack-name cruddur-dynamodb
+
+end=`date +%s`
+runtime=$((end-start))
+echo "Destroy duration: $runtime s"

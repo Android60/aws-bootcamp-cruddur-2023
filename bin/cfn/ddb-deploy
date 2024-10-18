@@ -1,0 +1,10 @@
+#!/bin/bash
+
+ABS_PATH=$(readlink -f "$0")
+PROJECT_PATH="$(dirname "$(dirname "$(dirname "$ABS_PATH")")")"
+
+SAM_DIR="$PROJECT_PATH/aws/cfn/sam-lambda"
+cd $SAM_DIR
+bash build
+bash package
+bash deploy

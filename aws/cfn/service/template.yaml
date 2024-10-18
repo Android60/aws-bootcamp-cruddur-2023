@@ -1,0 +1,308 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  NetworkingStack:
+    Type: String
+    Default: cruddur-network
+  ClusterStack:
+    Type: String
+    Default: cruddur-cluster
+  RDSStack:
+    Type: String
+    Default: cruddur-rds
+Resources:
+  BackendTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: backend-flask
+      ExecutionRoleArn: !GetAtt CruddurServiceExecutionRole.Arn
+      TaskRoleArn: !GetAtt CruddurTaskRole.Arn
+      NetworkMode: awsvpc
+      Cpu: '256'
+      Memory: '512'
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: xray
+          Image: public.ecr.aws/xray/aws-xray-daemon
+          Essential: true
+          User: '1337'
+          PortMappings:
+            - Name: xray
+              ContainerPort: 2000
+              Protocol: udp
+        - Name: backend-flask
+          Image: 559077574210.dkr.ecr.us-east-1.amazonaws.com/backend-flask
+          Essential: true
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - python /backend-flask/bin/flask/health-check
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 60
+          PortMappings:
+            - Name: backend-flask
+              ContainerPort: 4567
+              Protocol: tcp
+              AppProtocol: http
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /cruddur/fargate-cluster
+              awslogs-region: us-east-1
+              awslogs-stream-prefix: backend-flask
+          Environment:
+            - Name: OTEL_SERVICE_NAME
+              Value: backend-flask
+            - Name: OTEL_EXPORTER_OTLP_ENDPOINT
+              Value: https://api.honeycomb.io
+            - Name: AWS_COGNITO_USER_POOL_ID
+              Value: us-east-1_7OaMVeDno
+            - Name: AWS_COGNITO_USER_POOL_CLIENT_ID
+              Value: 7n7jv66d4t2ft4ujt4pgik16ii
+            - Name: FRONTEND_URL
+              Value: https://cruddur.myhomelab.xyz
+            - Name: BACKEND_URL
+              Value: https://api.cruddur.myhomelab.xyz
+            - Name: AWS_DEFAULT_REGION
+              Value: us-east-1
+          Secrets:
+            - Name: AWS_ACCESS_KEY_ID
+              ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/AWS_ACCESS_KEY_ID
+            - Name: AWS_SECRET_ACCESS_KEY
+              ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/AWS_SECRET_ACCESS_KEY
+            - Name: CONNECTION_URL
+              ValueFrom:
+                Fn::ImportValue:
+                  !Sub ${RDSStack}DBConnectionUrlArn
+            - Name: ROLLBAR_ACCESS_TOKEN
+              ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/ROLLBAR_ACCESS_TOKEN
+            - Name: OTEL_EXPORTER_OTLP_HEADERS
+              ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/OTEL_EXPORTER_OTLP_HEADERS
+  FrontendTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: frontend-react-js
+      ExecutionRoleArn: !GetAtt CruddurServiceExecutionRole.Arn
+      TaskRoleArn: !GetAtt CruddurTaskRole.Arn
+      NetworkMode: awsvpc
+      Cpu: '256'
+      Memory: '512'
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: frontend-react-js
+          Image: 559077574210.dkr.ecr.us-east-1.amazonaws.com/frontend-react-js
+          Essential: true
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - curl -f http://localhost:3000 || exit 1
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 60
+          PortMappings:
+            - Name: frontend-react-js
+              ContainerPort: 3000
+              Protocol: tcp
+              AppProtocol: http
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /cruddur/fargate-cluster
+              awslogs-region: us-east-1
+              awslogs-stream-prefix: frontend-react-js
+  BackendService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Fn::ImportValue:
+          !Sub ${ClusterStack}ECSCluster
+      LaunchType: FARGATE
+      DesiredCount: 1
+      EnableECSManagedTags: true
+      EnableExecuteCommand: true
+      LoadBalancers:
+        - TargetGroupArn: 
+            Fn::ImportValue:
+              !Sub ${ClusterStack}BackendTargetGroup
+          ContainerName: backend-flask
+          ContainerPort: 4567
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - Fn::ImportValue:
+                !Sub ${ClusterStack}BackendSecurityGroupId
+          Subnets:
+            Fn::Split:
+              - ","
+              - Fn::ImportValue:
+                  !Sub "${NetworkingStack}PublicSubnetIds"
+      PropagateTags: SERVICE
+      ServiceName: backend-flask
+      TaskDefinition: !Ref BackendTaskDefinition
+      ServiceConnectConfiguration:
+        Enabled: true
+        Namespace: cruddur
+        Services:
+          - PortName: backend-flask
+            DiscoveryName: backend-flask
+            ClientAliases:
+              - Port: 4567
+  FrontendService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Fn::ImportValue:
+          !Sub ${ClusterStack}ECSCluster
+      LaunchType: FARGATE
+      DesiredCount: 1
+      EnableECSManagedTags: true
+      EnableExecuteCommand: true
+      LoadBalancers:
+        - TargetGroupArn: 
+            Fn::ImportValue:
+              !Sub ${ClusterStack}FrontendTargetGroup
+          ContainerName: frontend-react-js
+          ContainerPort: 3000
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - Fn::ImportValue:
+                !Sub ${ClusterStack}FrontendSecurityGroupId
+          Subnets:
+            Fn::Split:
+              - ","
+              - Fn::ImportValue:
+                  !Sub "${NetworkingStack}PublicSubnetIds"
+      PropagateTags: SERVICE
+      ServiceName: frontend-react-js
+      TaskDefinition: !Ref FrontendTaskDefinition
+      ServiceConnectConfiguration:
+        Enabled: true
+        Namespace: cruddur
+        Services:
+          - PortName: frontend-react-js
+            DiscoveryName: frontend-react-js
+            ClientAliases:
+              - Port: 4567
+  CruddurServiceExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-ServiceExecutionRole
+      AssumeRolePolicyDocument: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "ecs-tasks.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess
+      Policies: [
+        {
+          "PolicyName": "CruddurServiceExecutionPolicy",
+          "PolicyDocument": 
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                  {
+                      "Sid": "VisualEditor0",
+                      "Effect": "Allow",
+                      "Action": [
+                          "logs:DescribeLogGroups",
+                          "ecr:GetAuthorizationToken"
+                      ],
+                      "Resource": "*"
+                  },
+                  {
+                      "Sid": "VisualEditor1",
+                      "Effect": "Allow",
+                      "Action": [
+                          "logs:CreateLogStream",
+                          "ssm:GetParameters",
+                          "logs:CreateLogGroup",
+                          "logs:PutLogEvents"
+                      ],
+                      "Resource": [
+                          "arn:aws:logs:us-east-1:559077574210:log-group:/cruddur/fargate-cluster:log-stream:*",
+                          "arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/*"
+                      ]
+                  },
+                  {
+                      "Sid": "VisualEditor2",
+                      "Effect": "Allow",
+                      "Action": [
+                          "logs:CreateLogStream",
+                          "logs:DeleteLogGroup",
+                          "logs:GetLogEvents",
+                          "logs:CreateLogGroup",
+                          "logs:DeleteLogStream",
+                          "logs:PutLogEvents"
+                      ],
+                      "Resource": "arn:aws:logs:us-east-1:559077574210:log-group:/ecs/backend-flask:log-stream:*"
+                  }
+              ]
+            }
+        }
+      ]
+  CruddurTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-TaskRole
+      AssumeRolePolicyDocument: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "ecs-tasks.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+        - arn:aws:iam::aws:policy/CloudWatchFullAccess
+      Policies: [
+        {
+          "PolicyName": "SSMAccessPolicy",
+          "PolicyDocument":
+            {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Action": [
+                            "ssmmessages:CreateControlChannel",
+                            "ssmmessages:CreateDataChannel",
+                            "ssmmessages:OpenControlChannel",
+                            "ssmmessages:OpenDataChannel"
+                        ],
+                        "Effect": "Allow",
+                        "Resource": "*"
+                    }
+                ]
+            }
+        }
+      ]
+Outputs:
+  BackendServiceName:
+    Value: !GetAtt BackendService.Name
+    Export:
+      Name: !Sub "${AWS::StackName}BackendServiceName"
+  FrontendServiceName:
+    Value: !GetAtt FrontendService.Name
+    Export:
+      Name: !Sub "${AWS::StackName}FrontendServiceName"
