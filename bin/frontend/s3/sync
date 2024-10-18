@@ -9,7 +9,7 @@ ROOT_BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name cruddur-front
 if [[ $(aws s3 sync $FRONTEND_BUILD_DIR "s3://$ROOT_BUCKET_NAME" --dryrun | grep "^(dryrun) upload") ]]; then
     echo "Found changes"
     echo "Syncing $FRONTEND_BUILD_DIR to s3://$ROOT_BUCKET_NAME"
-    aws s3 sync $FRONTEND_BUILD_DIR "s3://$ROOT_BUCKET_NAME"
+    aws s3 sync --delete $FRONTEND_BUILD_DIR "s3://$ROOT_BUCKET_NAME"
     FRONTEND_DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name cruddur-frontend --query 'Stacks[0].Outputs[?OutputKey==`DistributionId`].OutputValue' --output text)
     echo "Invalidating distribution $FRONTEND_DISTRIBUTION_ID"
     aws cloudfront create-invalidation --distribution-id $FRONTEND_DISTRIBUTION_ID --paths "/*" --no-cli-pager
