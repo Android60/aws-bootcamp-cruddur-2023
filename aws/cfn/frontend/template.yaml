@@ -67,3 +67,12 @@ Resources:
         ViewerCertificate:
           AcmCertificateArn: !Ref CertificateArn
           SslSupportMethod: sni-only
+Outputs:
+  RootBucketName:
+    Value: !Ref RootBucket
+    Export:
+      Name: !Sub "${AWS::StackName}RootBucketName"
+  DistributionId:
+    Value: !Ref Distribution
+    Export:
+      Name: !Sub "${AWS::StackName}DistributionId"
