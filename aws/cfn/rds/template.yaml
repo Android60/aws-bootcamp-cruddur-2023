@@ -8,7 +8,7 @@ Parameters:
     Default: cruddur-cluster
   DBName:
     Type: String
-    Default: cruddur
+    Default: cruddur_root
   DBUsername:
     Type: String
     Default: cruddur_root
@@ -39,6 +39,7 @@ Resources:
       AllocatedStorage: !Ref DBStorageGB
       Engine: postgres
       EngineVersion: !Ref DBEngineVersion
+      PubliclyAccessible: true
       MasterUsername: !Ref DBUsername
       MasterUserPassword: '{{resolve:ssm:/cruddur/rds/master_user_password:1}}'
       DBSubnetGroupName: !Ref DBSubnetGroup
@@ -72,3 +73,7 @@ Outputs:
     Value: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${DBConnectionUrl}
     Export:
       Name: !Sub "${AWS::StackName}DBConnectionUrlArn"
+  DBSecurityGroupId:
+    Value: !GetAtt DBSecurityGroup.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}DBSecurityGroupId"
