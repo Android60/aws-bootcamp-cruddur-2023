@@ -4,4 +4,13 @@ ABS_PATH=$(readlink -f "$0")
 PROJECT_PATH="$(dirname "$(dirname "$(dirname "$ABS_PATH")")")"
 TEMPLATE_PATH=$PROJECT_PATH/aws/cfn/rds/template.yaml
 cfn-lint "$TEMPLATE_PATH"
-aws cloudformation deploy --stack-name "cruddur-rds" --template-file "$TEMPLATE_PATH" --no-execute-changeset --capabilities CAPABILITY_NAMED_IAM
+aws cloudformation deploy --stack-name "cruddur-rds" --template-file "$TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM
+DB_CONNECTION_URL_ARN=$(aws cloudformation describe-stacks --stack-name cruddur-rds --query 'Stacks[0].Outputs[?OutputKey==`DBConnectionUrlArn`].OutputValue' --output text)
+export CONNECTION_URL="$(aws ssm get-parameter --name "$DB_CONNECTION_URL_ARN" --output text --query Parameter.Value)"
+export MY_IP=$(curl ifconfig.me)
+export DB_SG_ID="$(aws cloudformation describe-stacks --stack-name cruddur-rds --query 'Stacks[0].Outputs[?OutputKey==`DBSecurityGroupId`].OutputValue' --output text)"
+# aws ec2 describe-security-group-rules --filter Name="group-id",Values="$DB_SG_ID" --output text --query "SecurityGroupRules[?IsEgress==\`true\` && IpProtocol==\`tcp\` && CidrIpv4==\`a.b.c.d/n\`].SecurityGroupRuleId"
+aws ec2 authorize-security-group-ingress --group-id "$DB_SG_ID" --protocol tcp --port 5432 --cidr "$MY_IP/32"
+echo $CONNECTION_URL
+# source $PROJECT_PATH/bin/rds/rds-update-sg-rule
+source $PROJECT_PATH/bin/db/setup
