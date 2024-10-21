@@ -152,44 +152,44 @@ Resources:
             DiscoveryName: backend-flask
             ClientAliases:
               - Port: 4567
-  FrontendService:
-    Type: AWS::ECS::Service
-    Properties:
-      Cluster:
-        Fn::ImportValue:
-          !Sub ${ClusterStack}ECSCluster
-      LaunchType: FARGATE
-      DesiredCount: 1
-      EnableECSManagedTags: true
-      EnableExecuteCommand: true
-      LoadBalancers:
-        - TargetGroupArn: 
-            Fn::ImportValue:
-              !Sub ${ClusterStack}FrontendTargetGroup
-          ContainerName: frontend-react-js
-          ContainerPort: 3000
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: ENABLED
-          SecurityGroups:
-            - Fn::ImportValue:
-                !Sub ${ClusterStack}FrontendSecurityGroupId
-          Subnets:
-            Fn::Split:
-              - ","
-              - Fn::ImportValue:
-                  !Sub "${NetworkingStack}PublicSubnetIds"
-      PropagateTags: SERVICE
-      ServiceName: frontend-react-js
-      TaskDefinition: !Ref FrontendTaskDefinition
-      ServiceConnectConfiguration:
-        Enabled: true
-        Namespace: cruddur
-        Services:
-          - PortName: frontend-react-js
-            DiscoveryName: frontend-react-js
-            ClientAliases:
-              - Port: 4567
+  # FrontendService:
+  #   Type: AWS::ECS::Service
+  #   Properties:
+  #     Cluster:
+  #       Fn::ImportValue:
+  #         !Sub ${ClusterStack}ECSCluster
+  #     LaunchType: FARGATE
+  #     DesiredCount: 1
+  #     EnableECSManagedTags: true
+  #     EnableExecuteCommand: true
+  #     LoadBalancers:
+  #       - TargetGroupArn: 
+  #           Fn::ImportValue:
+  #             !Sub ${ClusterStack}FrontendTargetGroup
+  #         ContainerName: frontend-react-js
+  #         ContainerPort: 3000
+  #     NetworkConfiguration:
+  #       AwsvpcConfiguration:
+  #         AssignPublicIp: ENABLED
+  #         SecurityGroups:
+  #           - Fn::ImportValue:
+  #               !Sub ${ClusterStack}FrontendSecurityGroupId
+  #         Subnets:
+  #           Fn::Split:
+  #             - ","
+  #             - Fn::ImportValue:
+  #                 !Sub "${NetworkingStack}PublicSubnetIds"
+  #     PropagateTags: SERVICE
+  #     ServiceName: frontend-react-js
+  #     TaskDefinition: !Ref FrontendTaskDefinition
+  #     ServiceConnectConfiguration:
+  #       Enabled: true
+  #       Namespace: cruddur
+  #       Services:
+  #         - PortName: frontend-react-js
+  #           DiscoveryName: frontend-react-js
+  #           ClientAliases:
+  #             - Port: 4567
   CruddurServiceExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -302,7 +302,7 @@ Outputs:
     Value: !GetAtt BackendService.Name
     Export:
       Name: !Sub "${AWS::StackName}BackendServiceName"
-  FrontendServiceName:
-    Value: !GetAtt FrontendService.Name
-    Export:
-      Name: !Sub "${AWS::StackName}FrontendServiceName"
+  # FrontendServiceName:
+  #   Value: !GetAtt FrontendService.Name
+  #   Export:
+  #     Name: !Sub "${AWS::StackName}FrontendServiceName"
