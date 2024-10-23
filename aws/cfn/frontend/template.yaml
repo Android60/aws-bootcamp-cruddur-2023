@@ -53,6 +53,10 @@ Resources:
         Enabled: true
         HttpVersion: http2and3 
         DefaultRootObject: index.html
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
         Origins:
           - DomainName: !GetAtt RootBucket.DomainName
             Id: RootBucketOrigin
