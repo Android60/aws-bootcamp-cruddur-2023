@@ -7,6 +7,7 @@ NETWORKING_TEMPLATE_PATH=$PROJECT_PATH/aws/cfn/networking/template.yaml
 CLUSTER_TEMPLATE_PATH=$PROJECT_PATH/aws/cfn/cluster/template.yaml
 RDS_TEMPLATE_PATH=$PROJECT_PATH/aws/cfn/rds/template.yaml
 SERVICE_TEMPLATE_PATH=$PROJECT_PATH/aws/cfn/service/template.yaml
+FRONTEND_TEMPLATE_PATH=$PROJECT_PATH/aws/cfn/frontend/template.yaml
 DYNAMODB_DEPLOY_PATH=$PROJECT_PATH/bin/cfn/ddb-deploy
 cfn-lint "$TEMPLATE_PATH"
 start=`date +%s`
@@ -15,11 +16,14 @@ aws cloudformation deploy --stack-name "cruddur-network" --template-file "$NETWO
 echo "Deploying: cruddur-cluster stack"
 aws cloudformation deploy --stack-name "cruddur-cluster" --template-file "$CLUSTER_TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM
 echo "Deploying: cruddur-rds stack"
+bash $PROJECT_PATH/bin/cfn/rds-deploy
 aws cloudformation deploy --stack-name "cruddur-rds" --template-file "$RDS_TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM
 echo "Deploying: cruddur-services stack"
 aws cloudformation deploy --stack-name "cruddur-services" --template-file "$SERVICE_TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM
 echo "Deploying: cruddur-dynamodb stack"
 source $DYNAMODB_DEPLOY_PATH
+echo "Deploying: cruddur-frontend stack"
+aws cloudformation deploy --stack-name "cruddur-frontend" --template-file "$FRONTEND_TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM
 end=`date +%s`
 runtime=$((end-start))
 echo "Deployment duration: $runtime s"
