@@ -2,11 +2,13 @@ import './ActivityForm.css';
 import React from "react";
 import process from 'process';
 import {ReactComponent as BombIcon} from './svg/bomb.svg';
+import { useParams } from 'react-router-dom';
 
 export default function ActivityForm(props) {
   const [count, setCount] = React.useState(0);
   const [message, setMessage] = React.useState('');
   const [ttl, setTtl] = React.useState('7-days');
+  const params = useParams();
 
   const classes = []
   classes.push('count')
@@ -26,6 +28,7 @@ export default function ActivityForm(props) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          user_handle: props.user.handle,
           message: message,
           ttl: ttl
         }),

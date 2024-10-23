@@ -55,8 +55,9 @@ export default function HomeFeedPage() {
       <div className='content'>
         <ActivityForm  
           popped={popped}
-          setPopped={setPopped} 
-          setActivities={setActivities} 
+          setPopped={setPopped}
+          setActivities={setActivities}
+          user={user}
         />
         <ReplyForm 
           activity={replyActivity} 
