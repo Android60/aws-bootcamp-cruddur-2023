@@ -33,11 +33,12 @@ class middleware():
             environ["isAuthenticated"] = True
             environ["username"] = claims['username']
             environ["sub"] = claims['sub']
-        except TokenVerifyError as e:
+        except TokenVerifyError as error:
             # Request is not authenticated
             # LOGGER.info("Middleware: This request is not authenticated")
-            # LOGGER.info(e)
+            # LOGGER.info(error)
             environ["isAuthenticated"] = False
+            environ["tokenVerifyError"] = error
         return self.app(environ, start_response)
         # res = Response(u'Authorization failed', mimetype= 'text/plain', status=401)
         # return res(environ, start_response)
