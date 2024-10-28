@@ -3,13 +3,13 @@ from flask import request
 from flask_cors import CORS, cross_origin
 from lib.helpers import check_errors
 
-from services.home_activities import *
-from services.notifications_activities import *
-from services.create_activity import *
-from services.search_activities import *
-from services.create_reply import *
-from services.user_activities import *
-from services.show_activity import *
+from services.home_activities import HomeActivities
+from services.notifications_activities import NotificationsActivities
+from services.create_activity import CreateActivity
+from services.search_activities import SearchActivities
+from services.create_reply import CreateReply
+from services.user_activities import UserActivities
+from services.show_activity import ShowActivity
 
 def load(app):
     @app.route("/api/activities/home", methods=['GET'])
