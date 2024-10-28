@@ -14,7 +14,6 @@ from services.show_activity import *
 def load(app):
     @app.route("/api/activities/home", methods=['GET'])
     def data_home():
-        access_token = CognitoJwtToken.extract_access_token(request.headers)
         if request.environ["isAuthenticated"]==True:
             # Request is authenticated
             cognito_user_id  = request.environ["sub"]
