@@ -5,6 +5,9 @@ import os
 from lib.cognito_jwt_middleware import middleware # For JWT verification
 from lib.helpers import check_errors
 
+import routes.activities
+import routes.general
+
 from services.users_short import *
 from services.home_activities import *
 from services.notifications_activities import *
@@ -34,8 +37,6 @@ from lib.telemetry import init_honeycomb, init_xray, init_rollbar
 LOGGER = init_cloudwatch('cruddur')
 LOGGER.info("Test log")
 #--------Cloudwatch--------
-
-import routes.activities
 
 app = Flask(__name__)
 
@@ -70,10 +71,6 @@ cors = CORS(
   methods="OPTIONS,GET,HEAD,POST"
 )
 
-@app.route('/api/health')
-def health_check():
-  return {'success': True}, 200
-
 # @app.route('/rollbar/test')
 # def rollbar_test():
 #     rollbar.report_message('Hello World!', 'warning')
@@ -87,6 +84,7 @@ def after_request(response):
     return response
 
 routes.activities.load(app)
+routes.general.load(app)
 
 @app.route("/api/message_groups", methods=['GET'])
 def data_message_groups():
