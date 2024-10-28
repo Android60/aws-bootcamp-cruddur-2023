@@ -1,6 +1,6 @@
 from flask import Flask
 from flask import request
-from flask_cors import CORS, cross_origin
+from flask_cors import cross_origin
 from lib.helpers import check_errors
 
 from services.home_activities import HomeActivities
@@ -8,8 +8,7 @@ from services.notifications_activities import NotificationsActivities
 from services.create_activity import CreateActivity
 from services.search_activities import SearchActivities
 from services.create_reply import CreateReply
-from services.user_activities import UserActivities
-from services.show_activity import ShowActivity
+
 
 def load(app):
     @app.route("/api/activities/home", methods=['GET'])
@@ -34,10 +33,7 @@ def load(app):
         data = NotificationsActivities.run()
         return data, 200
 
-    @app.route("/api/activities/@<string:handle>", methods=['GET'])
-    def data_handle(handle):
-        model = UserActivities.run(handle)
-        return check_errors(model)
+
 
     @app.route("/api/activities/search", methods=['GET'])
     def data_search():
@@ -54,10 +50,6 @@ def load(app):
         model = CreateActivity.run(message, user_handle, ttl)
         return check_errors(model)
 
-    @app.route("/api/activities/<string:activity_uuid>", methods=['GET'])
-    def data_show_activity(activity_uuid):
-        data = ShowActivity.run(activity_uuid=activity_uuid)
-        return data, 200
 
     @app.route("/api/activities/<string:activity_uuid>/reply", methods=['POST','OPTIONS'])
     @cross_origin()

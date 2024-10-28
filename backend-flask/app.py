@@ -8,6 +8,7 @@ from lib.helpers import check_errors
 import routes.activities
 import routes.general
 import routes.message
+import routes.users
 
 from services.users_short import *
 from services.home_activities import *
@@ -72,11 +73,6 @@ cors = CORS(
   methods="OPTIONS,GET,HEAD,POST"
 )
 
-# @app.route('/rollbar/test')
-# def rollbar_test():
-#     rollbar.report_message('Hello World!', 'warning')
-#     return "Hello World!"
-
 # CloudWatch Logs
 @app.after_request
 def after_request(response):
@@ -87,32 +83,7 @@ def after_request(response):
 routes.activities.load(app)
 routes.general.load(app)
 routes.message.load(app)
-
-
-@app.route("/api/users/@<string:handle>/short", methods=['GET'])
-def data_users_short(handle):
-  data = UsersShort.run(handle)
-  return data, 200
-
-
-
-@app.route("/api/profile/update", methods=['POST','OPTIONS'])
-@cross_origin()
-def data_update_profile():
-  bio          = request.json.get('bio',None)
-  display_name = request.json.get('display_name',None)
-  try:
-    cognito_user_id = request.environ["sub"]
-    model = UpdateProfile.run(
-      cognito_user_id=cognito_user_id,
-      bio=bio,
-      display_name=display_name
-    )
-    return check_errors(model)
-  except TokenVerifyError as e:
-    # unauthenicatied request
-    app.logger.debug(e)
-    return {}, 401
+routes.users.load(app)
 
 if __name__ == "__main__":
   app.run(debug=True)
