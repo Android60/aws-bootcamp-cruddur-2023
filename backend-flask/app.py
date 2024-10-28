@@ -35,6 +35,8 @@ LOGGER = init_cloudwatch('cruddur')
 LOGGER.info("Test log")
 #--------Cloudwatch--------
 
+import routes.activities
+
 app = Flask(__name__)
 
 cognito_jwt_token = CognitoJwtToken(
@@ -84,6 +86,8 @@ def after_request(response):
     LOGGER.error('%s %s %s %s %s %s', timestamp, request.remote_addr, request.method, request.scheme, request.full_path, response.status)
     return response
 
+routes.activities.load(app)
+
 @app.route("/api/message_groups", methods=['GET'])
 def data_message_groups():
   try:
@@ -131,70 +135,13 @@ def data_create_message():
   except TokenVerifyError as e:
     return {}, 401
 
-@app.route("/api/activities/home", methods=['GET'])
-def data_home():
-  access_token = CognitoJwtToken.extract_access_token(request.headers)
-  try:
-    # Request is authenticated
-    claims = cognito_jwt_token.verify(access_token)
-    app.logger.debug("This request is authenticated")
-    #---Decouple JWT verification with middleware---
-    app.logger.debug("Got from Middleware: User auth is")
-    app.logger.debug(request.environ["isAuthenticated"])
-    app.logger.debug(request.environ["sub"]) # Log current userid
-    #---Decouple JWT verification with middleware---
-    # app.logger.debug(claims)
-    # app.logger.debug(claims['username'])
-    data = HomeActivities.run(cognito_user_id=claims['username'])
-  except TokenVerifyError as e:
-    # Request is not authenticated
-    # app.logger.debug("This request is not authenticated")
-    _ = request.data
-    data = HomeActivities.run()
-  return data, 200
-
-@app.route("/api/activities/notifications", methods=['GET'])
-def data_notifications():
-  data = NotificationsActivities.run()
-  return data, 200
 
 @app.route("/api/users/@<string:handle>/short", methods=['GET'])
 def data_users_short(handle):
   data = UsersShort.run(handle)
   return data, 200
 
-@app.route("/api/activities/@<string:handle>", methods=['GET'])
-def data_handle(handle):
-  model = UserActivities.run(handle)
-  return check_errors(model)
 
-@app.route("/api/activities/search", methods=['GET'])
-def data_search():
-  term = request.args.get('term')
-  model = SearchActivities.run(term)
-  return check_errors(model)
-
-@app.route("/api/activities", methods=['POST','OPTIONS'])
-@cross_origin()
-def data_activities():
-  user_handle  = request.json['user_handle']
-  message = request.json['message']
-  ttl = request.json['ttl']
-  model = CreateActivity.run(message, user_handle, ttl)
-  return check_errors(model)
-
-@app.route("/api/activities/<string:activity_uuid>", methods=['GET'])
-def data_show_activity(activity_uuid):
-  data = ShowActivity.run(activity_uuid=activity_uuid)
-  return data, 200
-
-@app.route("/api/activities/<string:activity_uuid>/reply", methods=['POST','OPTIONS'])
-@cross_origin()
-def data_activities_reply(activity_uuid):
-  user_handle  = 'andrewbrown'
-  message = request.json['message']
-  model = CreateReply.run(message, user_handle, activity_uuid)
-  return check_errors(model)
 
 @app.route("/api/profile/update", methods=['POST','OPTIONS'])
 @cross_origin()
