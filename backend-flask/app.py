@@ -18,7 +18,10 @@ from services.show_activity import *
 from services.update_profile import *
 
 from lib.cognito_jwt_token import CognitoJwtToken, TokenVerifyError
-
+#--------Cloudwatch--------
+from lib.logging import init_cloudwatch
+from time import strftime
+#--------Cloudwatch--------
 #--------Honeycomb--------
 from opentelemetry import trace
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
@@ -33,11 +36,7 @@ from opentelemetry.sdk.trace.export import ConsoleSpanExporter, SimpleSpanProces
 from aws_xray_sdk.core import xray_recorder
 from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
 #--------X-RAY--------
-#--------Cloudwatch--------
-import watchtower
-import logging
-from time import strftime
-#--------Cloudwatch--------
+
 #--------Rollbar--------
 import rollbar
 import rollbar.contrib.flask
@@ -46,12 +45,7 @@ from flask import got_request_exception
 
 
 # Configuring Logger to Use CloudWatch
-LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.DEBUG)
-console_handler = logging.StreamHandler()
-cw_handler = watchtower.CloudWatchLogHandler(log_group='cruddur')
-LOGGER.addHandler(console_handler)
-LOGGER.addHandler(cw_handler)
+LOGGER = init_cloudwatch('cruddur')
 LOGGER.info("Test log")
 #--------Cloudwatch--------
 
