@@ -3,6 +3,7 @@ from flask import request
 from flask_cors import CORS, cross_origin
 import os
 from lib.cognito_jwt_middleware import middleware # For JWT verification
+from lib.helpers import check_errors
 
 from services.users_short import *
 from services.home_activities import *
@@ -70,12 +71,6 @@ cors = CORS(
 @app.route('/api/health')
 def health_check():
   return {'success': True}, 200
-
-def check_errors(model):
-  if model['errors'] is not None:
-    return model['errors'], 422
-  else:
-    return model['data'], 200
 
 # @app.route('/rollbar/test')
 # def rollbar_test():
