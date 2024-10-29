@@ -48,6 +48,30 @@ Resources:
           USER_POOL_ID: "us-east-1_7OaMVeDno"
       Code: authorizer.zip
       Description: Authorizer function for API GW
+  UploadAvatarLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt UploadAvatarLambda.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${API}/*/*/avatars/key_upload'
+  ProxyLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt UploadAvatarLambda.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${API}/*/*/{proxy+}'
+  AuthorizerLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt AuthorizerLambda.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${API}/authorizers/${Authorizer}'
   UploadAvatarLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -150,3 +174,15 @@ Resources:
         - /
         - - integrations
           - !Ref LambdaIntegration
+  Stage:
+    Type: 'AWS::ApiGatewayV2::Stage'
+    Properties:
+      StageName: $default
+      Description: Default Stage
+      AutoDeploy: true
+      ApiId: !Ref API
+      DefaultRouteSettings:
+        DetailedMetricsEnabled: false
+        DataTraceEnabled: false
+        ThrottlingBurstLimit: 10
+        ThrottlingRateLimit: 10
