@@ -11,9 +11,12 @@ ARTIFACT_BUCKET="cfn-artifacts.cruddur.myhomelab.xyz"
 LAMBDA_DIR_PATH=$PROJECT_PATH/aws/lambdas/cruddur-upload-avatar
 
 cd $AUTHORIZER_DIR_PATH
-# npm install --save aws-jwt-verify
-# zip -r $TEMPLATE_DIR_PATH/authorizer.zip $AUTHORIZER_DIR_PATH
-# zip -r $TEMPLATE_DIR_PATH/lambda.zip $LAMBDA_DIR_PATH
+npm install --save aws-jwt-verify
+rm $TEMPLATE_DIR_PATH/authorizer.zip
+zip -r $TEMPLATE_DIR_PATH/authorizer.zip .
+cd $LAMBDA_DIR_PATH
+rm $TEMPLATE_DIR_PATH/lambda.zip
+zip -r $TEMPLATE_DIR_PATH/lambda.zip .
 
 aws cloudformation package --template-file $TEMPLATE_PATH --s3-bucket $ARTIFACT_BUCKET --output-template-file $PACKAGED_TEMPLATE_PATH
 cfn-lint "$PACKAGED_TEMPLATE_PATH"
