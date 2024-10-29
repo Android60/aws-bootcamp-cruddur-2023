@@ -12,3 +12,24 @@ Resources:
       RouteSelectionExpression: $request.method $request.path
       ApiKeySelectionExpression: $request.header.x-api-key
       DisableExecuteApiEndpoint: False
+AvatarUploadRoute:
+  Type: AWS::ApiGatewayV2::Route
+  Properties:
+    ApiId: !Ref API
+    AuthorizationType: CUSTOM
+    AuthorizerId: !Ref Authorizer
+    RouteKey: 'POST /avatars/key_upload'
+    Target: !Join 
+      - /
+      - - integrations
+        - !Ref MyIntegration
+ProxyRoute:
+  Type: AWS::ApiGatewayV2::Route
+  Properties:
+    ApiId: !Ref API
+    AuthorizationType: NONE
+    RouteKey: 'OPTIONS /{proxy+}'
+    Target: !Join 
+      - /
+      - - integrations
+        - !Ref MyIntegration
