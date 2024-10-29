@@ -1,14 +1,40 @@
 AWSTemplateFormatVersion: 2010-09-09
-Parameters:
-  ClusterStack:
-    Type: String
-    Default: cruddur-cluster
 Resources:
+  LambdaIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+      ApiId: !Ref API
+      Description: Lambda Integration
+      IntegrationType: AWS_PROXY
+      TimeoutInMillis: 30000
+      ConnectionType: INTERNET
+      IntegrationUri: !GetAtt UploadAvatarLambda.Arn
+      IntegrationMethod: POST
+      PayloadFormatVersion: '2.0'
+  AuthorizerLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-Authorizer-role
+      AssumeRolePolicyDocument: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "lambda.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
   AuthorizerLambda:
     Type: AWS::Lambda::Function
     Properties:
       Runtime: nodejs20.x
-      Role: arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Role: !GetAtt AuthorizerLambdaExecutionRole.Arn
       Handler: index.handler
       Timeout: 3
       MemorySize: 128
@@ -26,7 +52,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Runtime: ruby3.3
-      Role: !Ref UploadAvatarLambdaExecutionRole
+      Role: !GetAtt UploadAvatarLambdaExecutionRole.Arn
       Handler: lambda_function.lambda_handler
       Timeout: 3
       MemorySize: 128
@@ -89,7 +115,15 @@ Resources:
       Name: !Sub ${AWS::StackName}-JWTAuthorizer
       ApiId: !Ref API
       AuthorizerType: REQUEST
-      AuthorizerUri: !Ref
+      AuthorizerUri: !Join 
+        - ''
+        - - 'arn:'
+          - !Ref 'AWS::Partition'
+          - ':apigateway:'
+          - !Ref 'AWS::Region'
+          - ':lambda:path/2015-03-31/functions/'
+          - !GetAtt AuthorizerLambda.Arn
+          - /invocations
       AuthorizerResultTtlInSeconds: 0
       AuthorizerPayloadFormatVersion: '2.0'
       EnableSimpleResponses: True
@@ -105,7 +139,7 @@ Resources:
       Target: !Join 
         - /
         - - integrations
-          - !Ref MyIntegration
+          - !Ref LambdaIntegration
   ProxyRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -115,4 +149,4 @@ Resources:
       Target: !Join 
         - /
         - - integrations
-          - !Ref MyIntegration
+          - !Ref LambdaIntegration
