@@ -12,24 +12,36 @@ Resources:
       RouteSelectionExpression: $request.method $request.path
       ApiKeySelectionExpression: $request.header.x-api-key
       DisableExecuteApiEndpoint: False
-AvatarUploadRoute:
-  Type: AWS::ApiGatewayV2::Route
-  Properties:
-    ApiId: !Ref API
-    AuthorizationType: CUSTOM
-    AuthorizerId: !Ref Authorizer
-    RouteKey: 'POST /avatars/key_upload'
-    Target: !Join 
-      - /
-      - - integrations
-        - !Ref MyIntegration
-ProxyRoute:
-  Type: AWS::ApiGatewayV2::Route
-  Properties:
-    ApiId: !Ref API
-    AuthorizationType: NONE
-    RouteKey: 'OPTIONS /{proxy+}'
-    Target: !Join 
-      - /
-      - - integrations
-        - !Ref MyIntegration
+  Authorizer:
+    Type: 'AWS::ApiGatewayV2::Authorizer'
+    Properties:
+      Name: !Sub ${AWS::StackName}-JWTAuthorizer
+      ApiId: !Ref API
+      AuthorizerType: REQUEST
+      AuthorizerUri: !Ref
+      AuthorizerResultTtlInSeconds: 0
+      AuthorizerPayloadFormatVersion: '2.0'
+      EnableSimpleResponses: True
+      IdentitySource:
+        - "$request.header.Authorization"
+  AvatarUploadRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref API
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref Authorizer
+      RouteKey: 'POST /avatars/key_upload'
+      Target: !Join 
+        - /
+        - - integrations
+          - !Ref MyIntegration
+  ProxyRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref API
+      AuthorizationType: NONE
+      RouteKey: 'OPTIONS /{proxy+}'
+      Target: !Join 
+        - /
+        - - integrations
+          - !Ref MyIntegration
