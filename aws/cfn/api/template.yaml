@@ -4,6 +4,77 @@ Parameters:
     Type: String
     Default: cruddur-cluster
 Resources:
+  AuthorizerLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: nodejs20.x
+      Role: arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Handler: index.handler
+      Timeout: 3
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          CLIENT_ID: "7n7jv66d4t2ft4ujt4pgik16ii"
+          USER_POOL_ID: "us-east-1_7OaMVeDno"
+      Code: authorizer.zip
+      Description: Authorizer function for API GW
+  UploadAvatarLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: ruby3.3
+      Role: !Ref UploadAvatarLambdaExecutionRole
+      Handler: lambda_function.lambda_handler
+      Timeout: 3
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          UPLOADS_BUCKET_NAME: "uploaded-avatars.cruddur.myhomelab.xyz"
+      Code: lambda.zip
+      Description: Generates presigned S3 URL
+  UploadAvatarLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-UploadAvatarLambda-role
+      AssumeRolePolicyDocument: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "lambda.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies: [
+      {
+        "PolicyName": "Cruddur-Avatar-Upload-AllowS3putObject",
+        "PolicyDocument": 
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                  "Sid": "VisualEditor0",
+                  "Effect": "Allow",
+                  "Action": "s3:PutObject",
+                  "Resource": "arn:aws:s3:::uploaded-avatars.cruddur.myhomelab.xyz/*"
+                }
+              ]
+            }
+        }
+      ]
   API:
     Type: 'AWS::ApiGatewayV2::Api'
     Properties:
