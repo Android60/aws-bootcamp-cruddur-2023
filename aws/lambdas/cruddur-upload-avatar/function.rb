@@ -10,7 +10,7 @@ def lambda_handler(event:, context:)
       body: JSON.generate('Hello from cruddur-cors!'),
       headers: {
         "Access-Control-Allow-Headers": "*, Authorization",
-        "Access-Control-Allow-Origin": "http://127.0.0.1:3000",
+        "Access-Control-Allow-Origin": "https://cruddur.myhomelab.xyz",
         "Access-Control-Allow-Methods": "OPTIONS,GET,POST"
       }
     }
@@ -30,7 +30,7 @@ def lambda_handler(event:, context:)
     body:body,
     headers: {
       "Access-Control-Allow-Headers": "*, Authorization",
-      "Access-Control-Allow-Origin": "http://127.0.0.1:3000",
+      "Access-Control-Allow-Origin": "https://cruddur.myhomelab.xyz",
       "Access-Control-Allow-Methods": "OPTIONS,GET,POST"
     }
   }
