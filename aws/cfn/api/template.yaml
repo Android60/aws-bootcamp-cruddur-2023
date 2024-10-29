@@ -3,11 +3,12 @@ Parameters:
   ClusterStack:
     Type: String
     Default: cruddur-cluster
-API:
-  Type: 'AWS::ApiGatewayV2::Api'
-  Properties:
-    Name: !Sub ${AWS::StackName}-Avatar-Upload
-    ProtocolType: HTTP
-    RouteSelectionExpression: $request.method $request.path
-    ApiKeySelectionExpression: $request.header.x-api-key
-    DisableExecuteApiEndpoint: False
+Resources:
+  API:
+    Type: 'AWS::ApiGatewayV2::Api'
+    Properties:
+      Name: !Sub ${AWS::StackName}-Avatar-Upload
+      ProtocolType: HTTP
+      RouteSelectionExpression: $request.method $request.path
+      ApiKeySelectionExpression: $request.header.x-api-key
+      DisableExecuteApiEndpoint: False
