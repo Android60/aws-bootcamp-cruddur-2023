@@ -1,7 +1,14 @@
 #!/bin/bash
+set -e
 
 ABS_PATH=$(readlink -f "$0")
 PROJECT_PATH="$(dirname "$(dirname "$(dirname "$ABS_PATH")")")"
 TEMPLATE_PATH=$PROJECT_PATH/aws/cfn/api/template.yaml
+AUTHORIZER_DIR_PATH=$PROJECT_PATH/aws/lambdas/authorizer
+
+cd $AUTHORIZER_DIR_PATH
+npm install --save aws-jwt-verify
+zip -r ../authorizer.zip .
+
 cfn-lint "$TEMPLATE_PATH"
-aws cloudformation deploy --stack-name "cruddur-api-gw" --template-file "$TEMPLATE_PATH" --no-execute-changeset --capabilities CAPABILITY_NAMED_IAM
+# aws cloudformation deploy --stack-name "cruddur-api-gw" --template-file "$TEMPLATE_PATH" --no-execute-changeset --capabilities CAPABILITY_NAMED_IAM
