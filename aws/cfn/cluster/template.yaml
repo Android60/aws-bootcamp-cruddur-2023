@@ -171,6 +171,14 @@ Resources:
           ToPort: 3000
           SourceSecurityGroupId: !Ref ALBSecurityGroup
           Description: !Sub ${AWS::StackName}-frontend-service-sg
+  PostConfirmationLambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${AWS::StackName}-PostConf-SG
+      GroupDescription: Security group for Cognito Post-confirmation Lambda function
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
   #  Frontend moved to separate stack
   # FrontendRecord:
   #   Type: AWS::Route53::RecordSet
@@ -217,4 +225,8 @@ Outputs:
     Value: !Ref FrontendTargetGroup
     Export:
       Name: !Sub "${AWS::StackName}FrontendTargetGroup"
+  PostConfirmationLambdaSecurityGroupId:
+    Value: !Ref PostConfirmationLambdaSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}PostConfirmationLambdaSecurityGroupId"
 # Metadata:
