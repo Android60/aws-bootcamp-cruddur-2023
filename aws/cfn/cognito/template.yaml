@@ -135,7 +135,7 @@ Resources:
   UserPoolIdParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /cruddur/cognito/AWS_USER_POOL_ID
+      Name: /cruddur/cognito/USER_POOL_ID
       Type: String
       Value: !Ref UserPool
       Description: Cognito UserPool ID
