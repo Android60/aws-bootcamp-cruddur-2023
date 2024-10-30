@@ -60,7 +60,14 @@ Resources:
           SourceSecurityGroupId:
               Fn::ImportValue:
                 !Sub ${ClusterStack}BackendSecurityGroupId
-          Description: Postgres
+          Description: 'Postgres: Allow from BackendSG'
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId:
+              Fn::ImportValue:
+                !Sub ${ClusterStack}PostConfirmationLambdaSecurityGroupId
+          Description: 'Postgres: allow from PostConfLambda'
   DBConnectionUrl:
     Type: AWS::SSM::Parameter
     Properties:
