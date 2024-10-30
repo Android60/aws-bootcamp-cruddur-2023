@@ -1,0 +1,211 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  NetworkingStack:
+    Type: String
+    Default: cruddur-network
+  ClusterStack:
+    Type: String
+    Default: cruddur-cluster
+  # RDSStack:
+  #   Type: String
+  #   Default: cruddur-rds
+  # CognitoUserPoolID:
+  #   Type: String
+  #   Default: us-east-1_7OaMVeDno
+Resources:
+  PostConfLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-PostConfLambda-role
+      AssumeRolePolicyDocument: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "lambda.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  PostConfLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt PostConfLambda.Arn
+      Action: lambda:InvokeFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPool}'
+  PostConfLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.9
+      Role: !GetAtt  PostConfLambdaRole.Arn
+      Handler: lambda_function.lambda_handler
+      Timeout: 3
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          CONNECTION_URL: "{{resolve:ssm:/cruddur/backend-flask/CONNECTION_URL}}"
+      Code: .artifacts/postconf-lambda.zip
+      VpcConfig:
+        SecurityGroupIds:
+          - Fn::ImportValue:
+                !Sub ${ClusterStack}PostConfirmationLambdaSecurityGroupId
+        SubnetIds:
+          Fn::Split:
+            - ","
+            - Fn::ImportValue:
+                !Sub "${NetworkingStack}PublicSubnetIds"
+      Description: Cognito Post-Confirmation Lambda
+# Userpool
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub '${AWS::StackName}-user-pool'
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          TemporaryPasswordValidityDays: 7
+      DeletionProtection: ACTIVE
+      LambdaConfig:
+        PostConfirmation: !GetAtt PostConfLambda.Arn
+      Schema:
+        - AttributeDataType: String
+          Name: preferred_username
+          Mutable: true
+          Required: true
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - AttributeDataType: String
+          Name: sub
+          Mutable: false
+          Required: true
+          StringAttributeConstraints:
+            MinLength: "1"
+            MaxLength: "2048"
+        - AttributeDataType: String
+          Name: email
+          Mutable: true
+          Required: true
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+        - AttributeDataType: String
+          Name: name
+          Mutable: true
+          Required: true
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_CODE
+      UserAttributeUpdateSettings:
+        AttributesRequireVerificationBeforeUpdate:
+          - email
+      MfaConfiguration: 'OFF'
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      UsernameConfiguration:
+        CaseSensitive: false
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Priority: 1
+            Name: verified_email
+  UserPoolIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /cruddur/cognito/AWS_USER_POOL_ID
+      Type: String
+      Value: !Ref UserPool
+      Description: Cognito UserPool ID
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: !Sub '${AWS::StackName}-client'
+      RefreshTokenValidity: 30
+      AccessTokenValidity: 60
+      IdTokenValidity: 60
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
+      ReadAttributes:
+        - address
+        - birthdate
+        - email
+        - email_verified
+        - family_name
+        - gender
+        - given_name
+        - locale
+        - middle_name
+        - name
+        - nickname
+        - phone_number
+        - phone_number_verified
+        - picture
+        - preferred_username
+        - profile
+        - updated_at
+        - website
+        - zoneinfo
+      WriteAttributes:
+        - address
+        - birthdate
+        - email
+        - family_name
+        - gender
+        - given_name
+        - locale
+        - middle_name
+        - name
+        - nickname
+        - phone_number
+        - picture
+        - preferred_username
+        - profile
+        - updated_at
+        - website
+        - zoneinfo
+      ExplicitAuthFlows:
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH
+      AllowedOAuthFlowsUserPoolClient: false
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      EnablePropagateAdditionalUserContextData: false
+      AuthSessionValidity: 3
+  ClientIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /cruddur/cognito/CLIENT_ID
+      Type: String
+      Value: !Ref UserPoolClient
+      Description: Cognito Client ID
+Outputs:
+  UserPoolId:
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub "${AWS::StackName}UserPoolId"
