@@ -1,0 +1,25 @@
+#!/bin/bash
+set -e
+
+ABS_PATH=$(readlink -f "$0")
+PROJECT_PATH="$(dirname "$(dirname "$(dirname "$ABS_PATH")")")"
+TEMPLATE_DIR_PATH=$PROJECT_PATH/aws/cfn/cognito
+TEMPLATE_PATH=$TEMPLATE_DIR_PATH/template.yaml
+PACKAGED_TEMPLATE_PATH=$TEMPLATE_DIR_PATH/template.packaged.yml
+AUTHORIZER_DIR_PATH=$PROJECT_PATH/aws/lambdas/authorizer
+ARTIFACT_BUCKET="cfn-artifacts.cruddur.myhomelab.xyz"
+LAMBDA_DIR_PATH=$PROJECT_PATH/aws/lambdas/cruddur-post-confirmation
+BUILD_DIR=/tmp/cruddur/build/post-conf-lambda
+
+rm -rf $BUILD_DIR
+rm -rf $TEMPLATE_DIR_PATH/.artifacts
+mkdir $TEMPLATE_DIR_PATH/.artifacts
+mkdir -p /tmp/cruddur/build/
+cp -r $LAMBDA_DIR_PATH $BUILD_DIR
+cd $BUILD_DIR
+pip install -r requirements.txt --target .
+zip -r $TEMPLATE_DIR_PATH/.artifacts/postconf-lambda.zip .
+
+aws cloudformation package --template-file $TEMPLATE_PATH --s3-bucket $ARTIFACT_BUCKET --output-template-file $PACKAGED_TEMPLATE_PATH
+cfn-lint "$PACKAGED_TEMPLATE_PATH"
+aws cloudformation deploy --stack-name "cruddur-cognito" --template-file "$PACKAGED_TEMPLATE_PATH" --no-execute-changeset --capabilities CAPABILITY_NAMED_IAM
