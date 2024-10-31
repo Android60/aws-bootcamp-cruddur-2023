@@ -20,4 +20,4 @@ zip -r $TEMPLATE_DIR_PATH/.artifacts/lambda.zip .
 
 aws cloudformation package --template-file $TEMPLATE_PATH --s3-bucket $ARTIFACT_BUCKET --output-template-file $PACKAGED_TEMPLATE_PATH
 cfn-lint "$PACKAGED_TEMPLATE_PATH"
-aws cloudformation deploy --stack-name "cruddur-api-gw" --template-file "$PACKAGED_TEMPLATE_PATH" --no-execute-changeset --capabilities CAPABILITY_NAMED_IAM
+aws cloudformation deploy --stack-name "cruddur-api-gw" --template-file "$PACKAGED_TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM

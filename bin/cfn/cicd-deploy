@@ -4,4 +4,4 @@ ABS_PATH=$(readlink -f "$0")
 PROJECT_PATH="$(dirname "$(dirname "$(dirname "$ABS_PATH")")")"
 TEMPLATE_PATH=$PROJECT_PATH/aws/cfn/cicd/template.yaml
 cfn-lint "$TEMPLATE_PATH"
-aws cloudformation deploy --stack-name "cruddur-cicd" --template-file "$TEMPLATE_PATH" --no-execute-changeset --capabilities CAPABILITY_NAMED_IAM
+aws cloudformation deploy --stack-name "cruddur-cicd" --template-file "$TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM
