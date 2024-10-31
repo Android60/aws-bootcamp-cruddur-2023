@@ -3,6 +3,8 @@
 ABS_PATH=$(readlink -f "$0")
 PROJECT_PATH="$(dirname "$(dirname "$(dirname "$(dirname "$ABS_PATH")")")")"
 FRONTEND_REACT_JS_PATH="$PROJECT_PATH/frontend-react-js"
+USER_POOL_ID="$(aws ssm get-parameter --name /cruddur/cognito/USER_POOL_ID --output text --query Parameter.Value)"
+CLIENT_ID="$(aws ssm get-parameter --name /cruddur/cognito/CLIENT_ID --output text --query Parameter.Value)"
 
 cd $FRONTEND_REACT_JS_PATH
 
