@@ -45,7 +45,7 @@ Resources:
       Environment:
         Variables:
           CLIENT_ID: "{{resolve:ssm:/cruddur/cognito/CLIENT_ID}}"
-          USER_POOL_ID: "{{resolve:ssm:/cruddur/cognito/USER_POOL_ID}"
+          USER_POOL_ID: "{{resolve:ssm:/cruddur/cognito/USER_POOL_ID}}"
       Code: .artifacts/authorizer.zip
       Description: Authorizer function for API GW
   UploadAvatarLambdaPermission:
@@ -133,6 +133,13 @@ Resources:
       RouteSelectionExpression: $request.method $request.path
       ApiKeySelectionExpression: $request.header.x-api-key
       DisableExecuteApiEndpoint: False
+  ApiGwUrl:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /cruddur/frontend/API_GATEWAY_URL
+      Type: String
+      Value: !GetAtt API.ApiEndpoint
+      Description: AWS API Gateway endpoint
   Authorizer:
     Type: 'AWS::ApiGatewayV2::Authorizer'
     Properties:
