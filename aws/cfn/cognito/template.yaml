@@ -80,7 +80,7 @@ Resources:
           RequireNumbers: true
           RequireSymbols: true
           TemporaryPasswordValidityDays: 7
-      DeletionProtection: ACTIVE
+      DeletionProtection: INACTIVE
       LambdaConfig:
         PostConfirmation: !GetAtt PostConfLambda.Arn
       Schema:
