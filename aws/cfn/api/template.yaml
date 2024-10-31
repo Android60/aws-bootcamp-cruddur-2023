@@ -44,9 +44,9 @@ Resources:
         - x86_64
       Environment:
         Variables:
-          CLIENT_ID: "7n7jv66d4t2ft4ujt4pgik16ii"
-          USER_POOL_ID: "us-east-1_7OaMVeDno"
-      Code: authorizer.zip
+          CLIENT_ID: "{{resolve:ssm:/cruddur/cognito/CLIENT_ID}}"
+          USER_POOL_ID: "{{resolve:ssm:/cruddur/cognito/USER_POOL_ID}"
+      Code: .artifacts/authorizer.zip
       Description: Authorizer function for API GW
   UploadAvatarLambdaPermission:
     Type: AWS::Lambda::Permission
@@ -87,7 +87,7 @@ Resources:
       Environment:
         Variables:
           UPLOADS_BUCKET_NAME: "uploaded-avatars.cruddur.myhomelab.xyz"
-      Code: lambda.zip
+      Code: .artifacts/lambda.zip
       Description: Generates presigned S3 URL
   UploadAvatarLambdaExecutionRole:
     Type: AWS::IAM::Role
