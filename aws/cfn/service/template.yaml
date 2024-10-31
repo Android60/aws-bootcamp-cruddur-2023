@@ -57,10 +57,6 @@ Resources:
               Value: backend-flask
             - Name: OTEL_EXPORTER_OTLP_ENDPOINT
               Value: https://api.honeycomb.io
-            - Name: AWS_COGNITO_USER_POOL_ID
-              Value: us-east-1_7OaMVeDno
-            - Name: AWS_COGNITO_USER_POOL_CLIENT_ID
-              Value: 7n7jv66d4t2ft4ujt4pgik16ii
             - Name: FRONTEND_URL
               Value: https://cruddur.myhomelab.xyz
             - Name: BACKEND_URL
@@ -80,6 +76,10 @@ Resources:
               ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/ROLLBAR_ACCESS_TOKEN
             - Name: OTEL_EXPORTER_OTLP_HEADERS
               ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/OTEL_EXPORTER_OTLP_HEADERS
+            - Name: AWS_COGNITO_USER_POOL_ID
+              ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/cognito/USER_POOL_ID
+            - Name: AWS_COGNITO_USER_POOL_CLIENT_ID
+              ValueFrom: arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/cognito/CLIENT_ID
   FrontendTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -235,8 +235,9 @@ Resources:
                           "logs:PutLogEvents"
                       ],
                       "Resource": [
-                          "arn:aws:logs:us-east-1:559077574210:log-group:/cruddur/fargate-cluster:log-stream:*",
-                          "arn:aws:ssm:us-east-1:559077574210:parameter/cruddur/backend-flask/*"
+                          {"Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/cruddur/fargate-cluster:log-stream:*"},
+                          {"Fn::Sub": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cruddur/backend-flask/*"},
+                          {"Fn::Sub": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cruddur/cognito/*"}
                       ]
                   },
                   {
