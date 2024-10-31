@@ -6,9 +6,9 @@ aws s3 rm s3://frontend.cruddur.myhomelab.xyz --recursive
 aws cloudformation delete-stack --stack-name cruddur-frontend
 aws cloudformation wait stack-delete-complete --stack-name cruddur-frontend
 
-echo "Deleting cruddur-cicd"
-aws cloudformation delete-stack --stack-name cruddur-cicd
-aws cloudformation wait stack-delete-complete --stack-name cruddur-cicd
+# echo "Deleting cruddur-cicd"
+# aws cloudformation delete-stack --stack-name cruddur-cicd
+# aws cloudformation wait stack-delete-complete --stack-name cruddur-cicd
 
 echo "Deleting cruddur-services"
 aws cloudformation delete-stack --stack-name cruddur-services
@@ -17,6 +17,14 @@ aws cloudformation wait stack-delete-complete --stack-name cruddur-services
 echo "Deleting cruddur-rds"
 aws cloudformation delete-stack --stack-name cruddur-rds
 aws cloudformation wait stack-delete-complete --stack-name cruddur-rds
+
+echo "Deleting cruddur-api-gw"
+aws cloudformation delete-stack --stack-name cruddur-api-gw
+aws cloudformation wait stack-delete-complete --stack-name cruddur-api-gw
+
+echo "Deleting cruddur-cognito"
+aws cloudformation delete-stack --stack-name cruddur-cognito
+aws cloudformation wait stack-delete-complete --stack-name cruddur-cognito
 
 echo "Deleting cruddur-cluster"
 aws cloudformation delete-stack --stack-name cruddur-cluster

@@ -15,6 +15,10 @@ echo "Deploying: cruddur-network stack"
 aws cloudformation deploy --stack-name "cruddur-network" --template-file "$NETWORKING_TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM
 echo "Deploying: cruddur-cluster stack"
 aws cloudformation deploy --stack-name "cruddur-cluster" --template-file "$CLUSTER_TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM
+echo "Deploying: cruddur-cognito stack"
+bash $PROJECT_PATH/bin/cfn/cognito-deploy
+echo "Deploying: cruddur-api-gw stack"
+bash $PROJECT_PATH/bin/cfn/api-deploy
 echo "Deploying: cruddur-rds stack"
 bash $PROJECT_PATH/bin/cfn/rds-deploy
 aws cloudformation deploy --stack-name "cruddur-rds" --template-file "$RDS_TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM
@@ -23,7 +27,9 @@ aws cloudformation deploy --stack-name "cruddur-services" --template-file "$SERV
 echo "Deploying: cruddur-dynamodb stack"
 source $DYNAMODB_DEPLOY_PATH
 echo "Deploying: cruddur-frontend stack"
-aws cloudformation deploy --stack-name "cruddur-frontend" --template-file "$FRONTEND_TEMPLATE_PATH" --capabilities CAPABILITY_NAMED_IAM
+bash $PROJECT_PATH/bin/cfn/frontend-deploy
+# echo "Deploying: cruddur-cicd stack"
+# bash $PROJECT_PATH/bin/cfn/cicd-deploy
 end=`date +%s`
 runtime=$((end-start))
 echo "Deployment duration: $runtime s"
