@@ -5,14 +5,15 @@ PROJECT_PATH="$(dirname "$(dirname "$(dirname "$(dirname "$ABS_PATH")")")")"
 FRONTEND_REACT_JS_PATH="$PROJECT_PATH/frontend-react-js"
 USER_POOL_ID="$(aws ssm get-parameter --name /cruddur/cognito/USER_POOL_ID --output text --query Parameter.Value)"
 CLIENT_ID="$(aws ssm get-parameter --name /cruddur/cognito/CLIENT_ID --output text --query Parameter.Value)"
+API_GATEWAY_URL="$(aws ssm get-parameter --name /cruddur/frontend/API_GATEWAY_URL --output text --query Parameter.Value)"
 
 cd $FRONTEND_REACT_JS_PATH
 
 REACT_APP_BACKEND_URL="https://api.cruddur.myhomelab.xyz" \
 REACT_APP_AWS_PROJECT_REGION="$AWS_DEFAULT_REGION" \
 REACT_APP_AWS_COGNITO_REGION="$AWS_DEFAULT_REGION" \
-REACT_APP_AWS_USER_POOLS_ID="us-east-1_7OaMVeDno" \
-REACT_APP_CLIENT_ID="7n7jv66d4t2ft4ujt4pgik16ii" \
+REACT_APP_AWS_USER_POOLS_ID="$USER_POOL_ID" \
+REACT_APP_CLIENT_ID="$CLIENT_ID" \
 REACT_APP_HONEYCOMB_API_KEY="$HONEYCOMB_API_KEY" \
-REACT_APP_API_GATEWAY_URL="https://tih2carech.execute-api.us-east-1.amazonaws.com" \
+REACT_APP_API_GATEWAY_URL="$API_GATEWAY_URL" \
 npm run build
