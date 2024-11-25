@@ -54,7 +54,10 @@ def load(app):
     @app.route("/api/activities/<string:activity_uuid>/reply", methods=['POST','OPTIONS'])
     @cross_origin()
     def data_activities_reply(activity_uuid):
-        user_handle  = 'andrewbrown'
-        message = request.json['message']
-        model = CreateReply.run(message, user_handle, activity_uuid)
-        return check_errors(model)
+        if request.environ["isAuthenticated"]==True:
+            cognito_user_id  = request.environ["sub"]
+            message = request.json['message']
+            model = CreateReply.run(message, cognito_user_id, activity_uuid)
+            return check_errors(model)
+        else:
+            return {}, 401
