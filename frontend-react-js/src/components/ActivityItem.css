@@ -44,3 +44,8 @@
 .activity_item .activity_actions .action:hover .icon {
   fill: rgb(149,0,255);
 }
+
+.replies .activity_item {
+  border-left: var(--field-border) solid;
+  margin-left: 10px
+}
