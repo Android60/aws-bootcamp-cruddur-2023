@@ -6,6 +6,13 @@
   background: var(--fg)
 }
 
+.activity_feed_primer {
+  font-size: 20px;
+  text-align: center;
+  padding: 24px;
+  color: rgb(255,255,255,0.3);
+}
+
 .activity_feed_collection {
   display: flex;
   flex-direction: column;
