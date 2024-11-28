@@ -9,6 +9,7 @@ import ActivityContent  from '../components/ActivityContent';
 export default function ReplyForm(props) {
   const [count, setCount] = React.useState(0);
   const [message, setMessage] = React.useState('');
+  const [errors, setErrors] = React.useState({}); //TODO: errors handling
 
   const classes = []
   classes.push('count')
@@ -62,6 +63,12 @@ export default function ReplyForm(props) {
     setMessage(event.target.value);
   }
 
+  const close = (event)=> {
+    if (event.target.classList.contains("reply_popup")) {
+      props.setPopped(false)
+    }
+  }
+
   let content;
   if (props.activity){
     content = <ActivityContent activity={props.activity} />;
@@ -69,10 +76,13 @@ export default function ReplyForm(props) {
 
 
   if (props.popped === true) {
-    return (
-      <div className="popup_form_wrap">
+    return (  
+      <div className="popup_form_wrap reply_popup" onClick={close}>
         <div className="popup_form">
           <div className="popup_heading">
+            <div className="popup_title">
+                Reply
+              </div>
           </div>
           <div className="popup_content">
             <div className="activity_wrap">
