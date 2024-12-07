@@ -33,3 +33,16 @@
 .activity_feed_heading .cruds_count{
   color: rgb(255,255,255,0.5);
 }
+
+/* HTML: <div class="loader"></div> */
+.loader {
+  margin: auto;
+  margin-top: 10px;
+  width: 50px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 8px solid;
+  border-color: var(--field-border-focus) #0000;
+  animation: l1 1s infinite;
+}
+@keyframes l1 {to{transform: rotate(.5turn)}}

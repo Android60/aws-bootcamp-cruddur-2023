@@ -16,9 +16,11 @@ export default function HomeFeedPage() {
   const [replyActivity, setReplyActivity] = React.useState({});
   const [user, setUser] = React.useState(null);
   const dataFetchedRef = React.useRef(false);
+  const [loading, setLoading] = React.useState(false);
 
   const loadData = async () => {
     try {
+      setLoading(true)
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`
       await getAccessToken()
       const access_token = localStorage.getItem("access_token")
@@ -29,6 +31,7 @@ export default function HomeFeedPage() {
         method: "GET"
       });
       let resJson = await res.json();
+      setLoading(false)
       if (res.status === 200) {
         setActivities(resJson)
       } else {
@@ -74,6 +77,7 @@ export default function HomeFeedPage() {
             setReplyActivity={setReplyActivity} 
             setPopped={setPoppedReply} 
             activities={activities} 
+            loading={loading}
           />
         </div>
       </div>
